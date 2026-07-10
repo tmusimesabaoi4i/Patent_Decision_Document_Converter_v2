@@ -1,0 +1,4 @@
+<div class="patent-text">
+<p class="patent-paragraph no-num">1.CRLF改行のテスト。</p>
+<p class="patent-paragraph no-num">段落[0012]を参照。(1)fullwidth以上</p>
+</div>

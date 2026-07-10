@@ -1,0 +1,20 @@
+
+　本願発明は、RRC Setup Requestを受信した後、NRセルにおいてSNRを測定するものである。
+
+　５Gシステムにおいて、LTE-Aとの共存が求められる。gNB-CU-CPは、gNB-CU-UPと連携して動作する。
+
+　端末(ms)は、iPadOSを搭載したタブレットであってもよい。H Oを実行する際、R-Aプリアンブルを送信する。
+
+　PDCCHを介してDCIを受信し、PDSCHでデータを受け取る。HARQ-AckをPUCCHで報告する。
+
+　eMBBおよびURLLCのユースケースでは、QoSフローがSdapレイヤで処理される。
+
+　ROM、RAM、CPUなどのハードウェア。TCP/IPプロトコル。MIMOアンテナとOFDM変調。
+
+　LTEシステムのeNBは、EPCに接続される。NRのgNBは５GCに接続される。
+
+　Measurement Reportを送信する。RRC Reconfigurationが完了する。UE Capability Informationを通知する。
+
+　SNRとSINRは異なる指標である。NR-UとNRの違い。AnrとNRの違い。
+
+　以上

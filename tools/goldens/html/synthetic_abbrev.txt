@@ -1,0 +1,12 @@
+<div class="patent-text">
+<p class="patent-paragraph no-num">本願発明は、rrc setup requestを受信した後、nrセルにおいてsnrを測定するものである。</p>
+<p class="patent-paragraph no-num">5gシステムにおいて、lte-aとの共存が求められる。gnbcucpは、gnbcuupと連携して動作する。</p>
+<p class="patent-paragraph no-num">端末(ms)は、ipadosを搭載したタブレットであってもよい。H Oを実行する際、R-Aプリアンブルを送信する。</p>
+<p class="patent-paragraph no-num">pdcchを介してdciを受信し、pdschでデータを受け取る。harq-ackをpucchで報告する。</p>
+<p class="patent-paragraph no-num">embbおよびurllcのユースケースでは、qosフローがsdapレイヤで処理される。</p>
+<p class="patent-paragraph no-num">ROM、RAM、CPUなどのハードウェア。tcp/ipプロトコル。mimoアンテナとofdm変調。</p>
+<p class="patent-paragraph no-num">lteシステムのenbは、epcに接続される。nrのgnbは5gcに接続される。</p>
+<p class="patent-paragraph no-num">measurement reportを送信する。rrc reconfigurationが完了する。ue capability informationを通知する。</p>
+<p class="patent-paragraph no-num">snrとsinrは異なる指標である。nr-uとnrの違い。anrとnrの違い。</p>
+<p class="patent-paragraph no-num">以上</p>
+</div>

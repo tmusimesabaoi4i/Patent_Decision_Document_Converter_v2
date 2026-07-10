@@ -1,0 +1,3 @@
+<div class="patent-text">
+<p class="patent-paragraph no-num">一行だけの本文。</p>
+</div>

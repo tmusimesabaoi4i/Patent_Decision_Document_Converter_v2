@@ -1,0 +1,19 @@
+　本願発明は、rrc setup requestを受信した後、nrセルにおいてsnrを測定するものである。
+
+　5gシステムにおいて、lte-aとの共存が求められる。gnbcucpは、gnbcuupと連携して動作する。
+
+　端末（ms）は、ipadosを搭載したタブレットであってもよい。H Oを実行する際、R-Aプリアンブルを送信する。
+
+　pdcchを介してdciを受信し、pdschでデータを受け取る。harq-ackをpucchで報告する。
+
+　embbおよびurllcのユースケースでは、qosフローがsdapレイヤで処理される。
+
+　ROM、RAM、CPUなどのハードウェア。tcp/ipプロトコル。mimoアンテナとofdm変調。
+
+　lteシステムのenbは、epcに接続される。nrのgnbは5gcに接続される。
+
+　measurement reportを送信する。rrc reconfigurationが完了する。ue capability informationを通知する。
+
+　snrとsinrは異なる指標である。nr-uとnrの違い。anrとnrの違い。
+
+以上

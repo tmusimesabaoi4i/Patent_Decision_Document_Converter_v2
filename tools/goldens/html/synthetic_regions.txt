@@ -1,0 +1,27 @@
+<div class="patent-text">
+<p class="patent-paragraph no-num">理由1(進歩性)について</p>
+<p class="patent-paragraph no-num">&lt;補正をする際の注意&gt;補正をする場合は以下に注意してください。</p>
+<p class="patent-paragraph no-num">補正書の様式に従うこと。</p>
+<p class="patent-paragraph no-num">(上記「●●●●」に置き換えて、「PA5J」と入力ください。)</p>
+<p class="patent-paragraph no-num">&lt;先行技術文献調査結果の記録&gt;・調査した分野  IPC H04W 72/04</p>
+<p class="patent-paragraph no-num">・先行技術文献  特開2020-123456号公報</p>
+<p class="patent-paragraph no-num">この先行技術文献調査結果の記録は、拒絶理由を構成するものではありません。</p>
+<p class="patent-paragraph no-num">引用文献1(特に段落【0012】-【0015】、図1-3参照)には、無線通信システムにおいて、</p>
+<p class="patent-paragraph no-num">基地局が端末に対して制御情報を送信することが記載されている。</p>
+<p class="patent-paragraph no-num">引用文献2(特に段落【0020】参照)には、キャリアアグリゲーションを用いる</p>
+<p class="patent-paragraph no-num">こと が記載されている。</p>
+<p class="patent-paragraph no-num">&lt;付記&gt;この出願については、上述のとおりです。</p>
+<p class="patent-paragraph no-num">面接をご希望の場合はご連絡ください。</p>
+<p class="patent-paragraph no-num">この付記は、拒絶理由を構成するものではありません。</p>
+<p class="patent-paragraph no-num">&lt;優先権の主張の効果について&gt;本願の優先権主張の基礎とされた先の出願の出願書類には、</p>
+<p class="patent-paragraph no-num">上記の事項が記載されていないため、</p>
+<p class="patent-paragraph no-num">優先権の主張の効果が認められない。</p>
+<p class="patent-paragraph no-num">例えば、請求項1は、「アンテナと、</p>
+<p class="patent-paragraph no-num">プロセッサと、</p>
+<p class="patent-paragraph no-num">メモリとを備える端末装置。」と認める。</p>
+<p class="patent-paragraph no-num">&lt;補正の示唆&gt;以下のように補正することが考えられます。</p>
+<p class="patent-paragraph no-num">(1)請求項1において、featureAを追加する。</p>
+<p class="patent-paragraph no-num">(2)明細書段落0015を修正する。</p>
+<p class="patent-paragraph no-num">なお、上記の補正の示唆は、法律的効果を生じさせるものではなく、拒絶理由を解消するための一案である。明細書等についてどのように補正をするかは、出願人が決定すべきものである。</p>
+<p class="patent-paragraph no-num">以上</p>
+</div>
