@@ -1,5 +1,4 @@
-// ファイル名例: text-convert-module.js
-// （お好みで textUtilsConvertForDoc.js などに変更してください）
+// ファイル名: textUtilsConvertForDoc.js
 
 (function (root) {
   "use strict";
@@ -62,13 +61,11 @@
   }
 
   /**
-   * 文字列中の「全角英数字」を半角化する
+   * 全角英数字を半角に変換する。
    * @param {string} text
    * @returns {string}
    */
-  function toFwAlnumStr(text) {
-    // ※名前は既存との互換のためそのままですが、
-    //   実際には「全角 → 半角」に変換します。
+  function toHalfAlnumStr(text) {
     return String(text).replace(/[０-９Ａ-Ｚａ-ｚ]/g, toHalfAlnumChar);
   }
 
@@ -101,7 +98,7 @@
     }
 
     // 全角英数字を半角に正規化
-    s = toFwAlnumStr(s);
+    s = toHalfAlnumStr(s);
 
     // n/m - x/y をまとめて拾う（/ と - の前後に空白があってもマッチさせる）
     var pattern = /\s*(\d+)\s*(\/)\s*(\d+)(\s*-\s*)(\d+)\s*(\/)\s*(\d+)/g;
@@ -257,7 +254,7 @@
     }
 
     // 全角英数字を半角に正規化
-    s = toFwAlnumStr(s);
+    s = toHalfAlnumStr(s);
 
     // デバッグしたいときだけコメントアウトを外す
     // console.log("[convertEachLine]", s);

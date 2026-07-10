@@ -29,7 +29,7 @@
  *
  * ▼ モード（変換処理）の追加・変更方法
  *   - 基本パターン:
- *       1. modeLists.js にモード用の関数リストを追加
+ *       1. modeFunctionLists.js にモード用の関数リストを追加
  *       2. HTML のラジオボタンに同じ value を設定
  *       3. app.js 側は ModeFunctionLists を自動登録するため、core は変更不要
  *
@@ -585,7 +585,7 @@
 
     /**
      * グローバルに定義された ModeFunctionLists をレジストリへ取り込む
-     * - modeLists.js が root.ModeFunctionLists を定義していることを想定。
+     * - modeFunctionLists.js が root.ModeFunctionLists を定義していることを想定。
      * @param {Record<string, any[]>} [source] 明示的に渡す場合のオブジェクト
      */
     function bootstrapModeLists(source) {
@@ -616,7 +616,7 @@
         return;
       }
 
-      // modeLists.js 由来の関数リストを取り込み
+      // modeFunctionLists.js 由来の関数リストを取り込み
       bootstrapModeLists();
 
       const toastRoot = /** @type {HTMLElement|null} */ (

@@ -1,5 +1,5 @@
 /**
- * modeLists.js
+ * modeFunctionLists.js
  * --------------------------------------------------------------------------
  * README（モード別変換関数リストの追加・編集方法）
  *
@@ -31,10 +31,10 @@
  *     ];
  *
  * ▼ App との連携（ローカル HTML 前提）
- *   1. index.html で app.js より先に modeLists.js を読み込む。
- *        <script src="js/modeLists.js"></script>
+ *   1. main.html で app.js より先に modeFunctionLists.js を読み込む。
+ *        <script src="js/modeFunctionLists.js"></script>
  *        <script src="js/app.js"></script>
- *   2. modeLists.js はグローバル（root）に ModeFunctionLists を公開する。
+ *   2. modeFunctionLists.js はグローバル（root）に ModeFunctionLists を公開する。
  *   3. app.js 内の App.init() が起動時に ModeFunctionLists を自動登録する。
  *
  * ▼ 注意

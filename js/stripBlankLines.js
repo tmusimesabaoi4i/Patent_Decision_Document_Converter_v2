@@ -1,3 +1,21 @@
+/**
+ * stripBlankLines.js
+ * ---------------------------------------------------------------------------
+ * 特許文書中の特定ブロック（補正の掲載・調査結果・引用文献・付記・優先権など）
+ * 内部に含まれる空行を削除するユーティリティ群。
+ *
+ * ▼ 公開するグローバル
+ *   - root.stripBlankLines
+ *       stripBlankLinesInCorrectionNote, stripBlankLinesInSearchResult,
+ *       stripBlankLinesInCitation, stripBlankLinesInAppendix,
+ *       stripBlankLinesInPriority, stripBlankLinesInAmendmentSuggestion,
+ *       stripBlankLinesInAddedNewMatter
+ *
+ * ▼ 依存
+ *   - なし（内部に splitLines / joinLines を持つ）
+ * ---------------------------------------------------------------------------
+ */
+
 (function (root) {
   "use strict";
 

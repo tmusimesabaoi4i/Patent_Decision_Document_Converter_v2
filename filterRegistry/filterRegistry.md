@@ -14,7 +14,7 @@
 flowchart LR
   UI["main.html"]
   App["app.js"]
-  Modes["modeLists.js"]
+  Modes["modeFunctionLists.js"]
   Chains["runTextChains"]
   Registry["TextFilterRegistry"]
   Filters["textUtils* 等"]
@@ -31,8 +31,8 @@ flowchart LR
 |---|---|---|
 | UI | `main.html` | モード選択・入出力・ボタン |
 | オーケストレーション | `app.js` | 半角正規化、モードキー取得、パイプライン実行 |
-| モード定義 | `modeLists.js` | モードキー → フィルタチェーン名の対応 |
-| チェーン実行 | `defaultTextFilters.js` | `runTextChains`・`TextFilterRegistry` の提供 |
+| モード定義 | `modeFunctionLists.js` | モードキー → フィルタチェーン名の対応 |
+| チェーン実行 | `textFilterRegistry.js` | `runTextChains`・`TextFilterRegistry` の提供 |
 | フィルタ基盤 | `filterRegistry.js` | 名前付きリストの登録・順次実行 |
 | 変換関数 | `textUtils*` 等 | 実際の文字列変換 |
 
@@ -41,7 +41,7 @@ flowchart LR
 1. ユーザーが **Convert** を押す
 2. `app.js` が入力を `toHalfWidth()`（NFKC）で半角正規化する
 3. `main.html` のラジオ `value`（例: `officeAction`）をモードキーとして取得する
-4. `modeLists.js` の `ModeFunctionLists[modeKey]` が `runTextChains(names, text)` を呼ぶ
+4. `modeFunctionLists.js` の `ModeFunctionLists[modeKey]` が `runTextChains(names, text)` を呼ぶ
 5. `runTextChains` が `TextFilterRegistry.apply(name, text)` を名前の順に実行する
 6. 各フィルタリスト内の関数が変換を行い、結果が出力欄に表示される
 
@@ -53,7 +53,7 @@ flowchart LR
 
 ```
 filterRegistry.js          → root.FilterRegistry
-textUtilsStd.js            → root.Std
+textUtilsStd.js            → root.textUtilsStd
 textUtilsInit.js           → root.textUtilsInit
 textUtilsMain.js           → root.textUtilsMain
 stripBlankLines.js         → root.stripBlankLines
@@ -61,8 +61,8 @@ textUtilsConvertForDoc.js  → root.textUtilsConvertForDoc
 textUtilsConvertForCau.js  → root.textUtilsConvertForCau
 paragraphExtraction.js     → root.paragraphExtraction
 makeHtml.js                → root.makeHtml
-defaultTextFilters.js      → root.TextFilterRegistry, root.runTextChains
-modeLists.js               → root.ModeFunctionLists
+textFilterRegistry.js      → root.TextFilterRegistry, root.runTextChains
+modeFunctionLists.js               → root.ModeFunctionLists
 app.js                     → 自動起動
 ```
 
@@ -70,7 +70,7 @@ app.js                     → 自動起動
 
 ## 3. モードとパイプライン
 
-`main.html` のラジオ `value`・`modeLists.js` のキー・`runTextChains` に渡す名前の対応です。
+`main.html` のラジオ `value`・`modeFunctionLists.js` のキー・`runTextChains` に渡す名前の対応です。
 
 | UI ラベル | モードキー | パイプライン |
 |---|---|---|
@@ -91,7 +91,7 @@ app.js                     → 自動起動
 
 ## 4. 登録フィルタリスト
 
-`defaultTextFilters.js` が `TextFilterRegistry`（`FilterRegistry` のインスタンス）に登録するリストです。
+`textFilterRegistry.js` が `TextFilterRegistry`（`FilterRegistry` のインスタンス）に登録するリストです。
 
 | 名前 | 処理内容 | 定義元 |
 |---|---|---|
@@ -111,9 +111,9 @@ app.js                     → 自動起動
 
 ### モードを追加する
 
-1. `js/modeLists.js` の `ModeFunctionLists` にモードキーと変換関数を追加する
+1. `js/modeFunctionLists.js` の `ModeFunctionLists` にモードキーと変換関数を追加する
 2. `main.html` のラジオボタンに同じ `value` を設定する
-3. 必要なら `defaultTextFilters.js` に新しいフィルタリストを `register` し、`modeLists.js` の `names` 配列に追加する
+3. 必要なら `textFilterRegistry.js` に新しいフィルタリストを `register` し、`modeFunctionLists.js` の `names` 配列に追加する
 
 `app.js` は起動時に `ModeFunctionLists` を自動登録するため、コア側の変更は通常不要です。
 
@@ -125,7 +125,7 @@ app.js                     → 自動起動
 | 本文整形 | `textUtilsMain.js` / `main` 登録 |
 | セクション別空行削除 | `stripBlankLines.js` |
 | 末尾書式変換 | `textUtilsConvertForDoc.js`, `textUtilsConvertForCau.js` |
-| モードごとのパイプライン構成 | `modeLists.js` 内の `names` 配列 |
+| モードごとのパイプライン構成 | `modeFunctionLists.js` 内の `names` 配列 |
 | フィルタの登録・実行基盤 | 本ドキュメント §6 |
 
 ---
@@ -133,7 +133,7 @@ app.js                     → 自動起動
 ## 6. FilterRegistry API
 
 実装: `filterRegistry.js`  
-本番利用: `defaultTextFilters.js` が生成する `TextFilterRegistry` インスタンス
+本番利用: `textFilterRegistry.js` が生成する `TextFilterRegistry` インスタンス
 
 ### 基本概念
 
@@ -214,7 +214,7 @@ const reg = new FilterRegistry({
 
 ### 本アプリ固有のラッパー
 
-`defaultTextFilters.js` が提供するヘルパです。
+`textFilterRegistry.js` が提供するヘルパです。
 
 ```javascript
 // 複数リストを順に実行
@@ -224,7 +224,7 @@ await runTextChains(["init", "main", "convertEnd"], text);
 await TextFilterRegistry.apply("init", text);
 ```
 
-`modeLists.js` は各モードから `runTextChains(names, text)` を呼び出します。
+`modeFunctionLists.js` は各モードから `runTextChains(names, text)` を呼び出します。
 
 ---
 
@@ -257,4 +257,4 @@ interface Hooks {
 
 - 無効な名前・`fnList`・インデックス → 日本語メッセージの `Error` をスロー
 - ステップ実行エラー → `onError` フックを呼び、`stopOnError` に従い中断または続行
-- `modeLists.js` 側は `.catch()` で元テキストを返し、UI が壊れないようにしている
+- `modeFunctionLists.js` 側は `.catch()` で元テキストを返し、UI が壊れないようにしている

@@ -1,14 +1,20 @@
 /**
- * textUtils.js
+ * textUtilsStd.js
  * ---------------------------------------------------------------------------
- * 特許文書変換向けテキストユーティリティ集
+ * 低レベルなテキスト変換プリミティブを集めた共有モジュール。
  *
  * ▼ 目的
- *   - 特許文書の前処理・整形でよく使うテキスト変換関数をまとめたモジュール。
+ *   - 全角／半角変換や改行正規化など、各モジュールから共通利用される
+ *     基礎的なテキスト変換関数をまとめて提供する。
  *
- * ▼ 提供内容（主なエクスポート）
- *   - 個別関数:
- *       nl, hw, lead, clean, rmBlank, squeeze, trim, gap
+ * ▼ 公開するグローバル
+ *   - root.textUtilsStd
+ *       nl, joinLines, splitLines,
+ *       fwNum, hwNum, fwSym, hwSym, fwAlpha, hwAlpha,
+ *       fwAlnum, hwAlnum, fw, hw
+ *
+ * ▼ 依存
+ *   - なし（他モジュールに依存しない基盤モジュール）
  * ---------------------------------------------------------------------------
  */
 
@@ -450,7 +456,7 @@
         return String(str).split(/\r\n|\r|\n/);
     }
 
-  root.Std = {
+  root.textUtilsStd = {
     nl: nl,                     // 改行コードを統一する
     joinLines: joinLines,       // 配列化を \n で結合して文字列に戻す
     splitLines: splitLines,     // すべての改行コード (\r\n, \r, \n) を \n に正規化して配列化

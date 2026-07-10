@@ -2,39 +2,40 @@
   "use strict";
 
   /**
-   * patTextOps.js
+   * textUtilsMain.js
    * ------------------------------------------------------------------------
-   * 特許文書向けテキスト整形ユーティリティ（拡張性重視・過剰変換抑制版）
+   * 特許文書向けテキスト整形ユーティリティ（拡張性重視・過剰変換抑制版）。
    *
-   * 【設計の要点】
-   * 1) 正規表現は “複数行リテラル” や “/x のような非対応フラグ” を使わない。
-   *    - JS は /x（free-spacing）をサポートしないため、読みやすさのために
-   *      「改行・空白を混ぜたリテラル」を書くと、構文エラー/マッチ不整合を招く。
-   *    - 代わりに “パーツ配列” で組み立て、RegExp() で生成する。
+   * ▼ 役割
+   *   - 見出し・箇条書き・条文番号などを対象とした整形／全角化処理を提供する。
+   *   - 過剰変換を避けるため、技術用語トークン（IEEE802.11 / WPA-PSK 等）は
+   *     保護したうえで変換する。
    *
-   * 2) 全角化は “必要な箇所だけ” を狙う（過剰変換しない）。
-   *    - IEEE802.11 / WPA-PSK のような技術用語トークンは保護して維持する。
+   * ▼ 公開するグローバル
+   *   - root.textUtilsMain
+   *       padHead, trimHead, tightBelowBullet, fwHead,
+   *       fwNumLaw, fwRefLaw, alphaCase, tightClaims
    *
-   * 3) fwHead のデフォルトは "head"（見出しマークのみ変換）にする。
-   *    - ドット箇条書き行を勝手に fw(line) しない（全角化バグの主因を潰す）。
+   * ▼ 依存
+   *   - root.textUtilsStd（joinLines / splitLines / fwNum / fwAlnum / fw ほか）
    * ------------------------------------------------------------------------
    */
 
   // ======================================================================
-  // 依存（Std）
+  // 依存（textUtilsStd）
   // ======================================================================
 
-  var Std = root.Std || null;
-  if (!Std) {
+  var textUtilsStd = root.textUtilsStd || null;
+  if (!textUtilsStd) {
     // eslint-disable-next-line no-console
-    console.warn("patTextOps.js: root.Std が見つかりません。Std を先に読み込んでください。");
+    console.warn("textUtilsMain.js: root.textUtilsStd が見つかりません。textUtilsStd を先に読み込んでください。");
     return;
   }
 
-  var joinLines = Std.joinLines;
-  var splitLines = Std.splitLines;
-  var fwNum = Std.fwNum;     // 数字のみ全角化
-  var fwAlnum = Std.fwAlnum; // 英数字を全角化
+  var joinLines = textUtilsStd.joinLines;
+  var splitLines = textUtilsStd.splitLines;
+  var fwNum = textUtilsStd.fwNum;     // 数字のみ全角化
+  var fwAlnum = textUtilsStd.fwAlnum; // 英数字を全角化
 
   // ======================================================================
   // 内部ユーティリティ
@@ -127,7 +128,7 @@
 
   /**
    * 変換から除外したい “技術用語トークン” の既定セット
-   * - 追加したい場合は root.patTextOpsConfig.keepTechReList で拡張できる。
+   * - 追加したい場合は root.textUtilsMainConfig.keepTechReList で拡張できる。
    * @type {RegExp[]}
    */
   var DEFAULT_KEEP_TECH_RE_LIST = [
@@ -193,13 +194,13 @@
   /**
    * 呼び出し側で拡張できる設定
    * 例）
-   *   root.patTextOpsConfig = {
+   *   root.textUtilsMainConfig = {
    *     dotMarks: ["・","●",...],
    *     heading: { maxDigits: 2, maxDepth: 3, alphaMax: 2 },
    *     keepTechReList: [ /.../g, ... ]
    *   };
    */
-  var CFG = root.patTextOpsConfig || {};
+  var CFG = root.textUtilsMainConfig || {};
 
   // ======================================================================
   // 箇条書き・見出し判定（RegExp ビルダー方式）
@@ -485,19 +486,19 @@
    * 行頭が「●」で始まる行だけを全角化する
    * - 「文頭」とは「文字列先頭」または「改行 \n の直後」を指す（= 行の先頭 ^）。
    * - 行頭に空白がある「　●...」「 ●...」は対象外（※必要なら後で拡張可能）。
-   * - 変換は Std.fw（文字列全体を全角化する関数）に委譲する想定。
+   * - 変換は textUtilsStd.fw（文字列全体を全角化する関数）に委譲する想定。
    *
    * @param {string} str 入力文字列
    * @returns {string} 「●」行のみ全角化された文字列
    */
   function fwLineStartsWithBlackDot(str) {
     var s = String(str || "");
-    var fw = root.Std && root.Std.fw ? root.Std.fw : null;
-    var splitLines = root.Std && root.Std.splitLines ? root.Std.splitLines : null;
-    var joinLines = root.Std && root.Std.joinLines ? root.Std.joinLines : null;
+    var fw = root.textUtilsStd && root.textUtilsStd.fw ? root.textUtilsStd.fw : null;
+    var splitLines = root.textUtilsStd && root.textUtilsStd.splitLines ? root.textUtilsStd.splitLines : null;
+    var joinLines = root.textUtilsStd && root.textUtilsStd.joinLines ? root.textUtilsStd.joinLines : null;
 
     if (!fw || !splitLines || !joinLines) {
-      // Std が無い場合は安全側でそのまま返す
+      // textUtilsStd が無い場合は安全側でそのまま返す
       return s;
     }
 
@@ -512,12 +513,12 @@
   }
   function fwLineStartsWithSmallDot(str) {
     var s = String(str || "");
-    var fw = root.Std && root.Std.fw ? root.Std.fw : null;
-    var splitLines = root.Std && root.Std.splitLines ? root.Std.splitLines : null;
-    var joinLines = root.Std && root.Std.joinLines ? root.Std.joinLines : null;
+    var fw = root.textUtilsStd && root.textUtilsStd.fw ? root.textUtilsStd.fw : null;
+    var splitLines = root.textUtilsStd && root.textUtilsStd.splitLines ? root.textUtilsStd.splitLines : null;
+    var joinLines = root.textUtilsStd && root.textUtilsStd.joinLines ? root.textUtilsStd.joinLines : null;
 
     if (!fw || !splitLines || !joinLines) {
-      // Std が無い場合は安全側でそのまま返す
+      // textUtilsStd が無い場合は安全側でそのまま返す
       return s;
     }
 

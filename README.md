@@ -19,8 +19,8 @@
 |---|---|
 | 変換パイプラインの全体像・モード対応・フィルタの追加 | [filterRegistry/filterRegistry.md](filterRegistry/filterRegistry.md) |
 | アプリ本体・モード登録 | `js/app.js` 先頭コメント |
-| モード別パイプライン定義 | `js/modeLists.js` 先頭コメント |
-| フィルタ登録と `runTextChains` | `js/defaultTextFilters.js` 先頭コメント |
+| モード別パイプライン定義 | `js/modeFunctionLists.js` 先頭コメント |
+| フィルタ登録と `runTextChains` | `js/textFilterRegistry.js` 先頭コメント |
 
 ## プロジェクト構成（概要）
 

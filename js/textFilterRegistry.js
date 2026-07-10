@@ -1,29 +1,29 @@
 /**
- * defaultTextFilters.js
+ * textFilterRegistry.js
  * --------------------------------------------------------------------------
- * nl → hw → lead → clean → rmBlank → squeeze → trim → gap の順で実行する
- * フィルタパイプラインを FilterRegistry に登録し、グローバルから利用できるように
- * するための設定用スクリプト。
+ * 名前付きフィルタチェーン（init / main / stripBlankLines / convertEnd など）を
+ * FilterRegistry インスタンスに登録し、グローバルから利用できるようにする
+ * 設定用スクリプト。
  *
- * ▼ 前提
- *   - filterRegistry/filterRegistry.js が先に読み込まれており、
- *     root.FilterRegistry が利用可能であること。
- *   - textUtils.js が読み込まれており、
- *     root.TextUtils に
- *       nl, hw, lead, clean, rmBlank, squeeze, trim, gap
- *     が定義されていること。
+ * ▼ 依存（先に読み込まれている前提）
+ *   - filterRegistry/filterRegistry.js（root.FilterRegistry）
+ *   - textUtilsInit（root.textUtilsInit）
+ *   - textUtilsMain（root.textUtilsMain）
+ *   - stripBlankLines（root.stripBlankLines）
+ *   - textUtilsConvertForDoc（root.textUtilsConvertForDoc）
+ *   - textUtilsConvertForCau（root.textUtilsConvertForCau）
+ *   - paragraphExtraction（root.paragraphExtraction）
+ *   - makeHtml（root.makeHtml）
  *
  * ▼ 公開されるもの
  *   - root.TextFilterRegistry
- *       "init" という名前のフィルタリストを 1 つ登録済みの FilterRegistry インスタンス。
+ *       各種フィルタチェーンを登録済みの FilterRegistry インスタンス。
  *   - root.runTextChains(names, str, ...)
- *       複数のフィルタリストを順番に実行する汎用ヘルパ。
+ *       複数のフィルタチェーンを順番に実行する汎用ヘルパ。
  *
- * ▼ 使い方（例）
- *   const input = "  ほげ\r\nふが  ";
- *   TextFilterRegistry.apply("init", input).then((out) => {
- *     console.log(out);
- *   });
+ * ▼ "init" チェーンの実行順
+ *   nl → hw → clean → rmBlank → squeeze → trim → gap → lead
+ * --------------------------------------------------------------------------
  */
 
 (function (root) {
@@ -44,14 +44,14 @@
   }
 
   /**
-   * TextUtils 側のユーティリティオブジェクトを取得
-   * - textUtils.js で root.TextUtils にエクスポートされている前提。
+   * textUtilsInit 側のユーティリティオブジェクトを取得
+   * - textUtilsInit.js で root.textUtilsInit にエクスポートされている前提。
    */
   var TextLib_Init = root.textUtilsInit || null;
 
   if (!TextLib_Init) {
     // eslint-disable-next-line no-console
-    console.warn("TextUtils が見つかりません。textUtils.js の中でグローバル名を確認してください。");
+    console.warn("textUtilsInit が見つかりません。textUtilsInit.js の中でグローバル名を確認してください。");
     return;
   }
 
@@ -77,7 +77,7 @@
     typeof lead !== "function"
   ) {
     // eslint-disable-next-line no-console
-    console.warn("nl, hw, lead, clean, rmBlank, squeeze, trim, gap のいずれかが定義されていません。textUtils.js を確認してください。");
+    console.warn("nl, hw, lead, clean, rmBlank, squeeze, trim, gap のいずれかが定義されていません。textUtilsInit.js を確認してください。");
     return;
   }
 
@@ -146,7 +146,7 @@
 
   if (!TextLib_ConvertForDoc) {
     // eslint-disable-next-line no-console
-    console.warn("textUtilsConvertForDoc が見つかりません。stripBlankLines.js の中でグローバル名を確認してください。");
+    console.warn("textUtilsConvertForDoc が見つかりません。textUtilsConvertForDoc.js の中でグローバル名を確認してください。");
     return;
   }
 
@@ -158,7 +158,7 @@
 
   if (!TextLib_ConvertForCau) {
     // eslint-disable-next-line no-console
-    console.warn("textUtilsConvertForCau が見つかりません。stripBlankLines.js の中でグローバル名を確認してください。");
+    console.warn("textUtilsConvertForCau が見つかりません。textUtilsConvertForCau.js の中でグローバル名を確認してください。");
     return;
   }
 
@@ -174,7 +174,7 @@
   var makeHtml = root.makeHtml || null;
 
   var extractParagraphAndFigureRefs = paragraphExtraction.extractParagraphAndFigureRefs;
-  var to_HTML = makeHtml.to_HTML;
+  var toHtml = makeHtml.toHtml;
 
 
   // -------------------------------------------------------------------------
@@ -238,7 +238,7 @@
 
   // -------------------------------------------------------------------------
   // "init" パイプラインの登録
-  // nl → hw → lead → clean → rmBlank → squeeze → trim → gap
+  // nl → hw → clean → rmBlank → squeeze → trim → gap → lead
   // -------------------------------------------------------------------------
 
   /**
@@ -315,7 +315,7 @@
   ]);
 
   textFilterRegistry.register("tohtml", [
-    to_HTML,
+    toHtml,
   ]);
 
   // -------------------------------------------------------------------------

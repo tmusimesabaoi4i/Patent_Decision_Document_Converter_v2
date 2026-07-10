@@ -1,4 +1,4 @@
-// ファイル名例: paragraphExtraction.js
+// ファイル名: paragraphExtraction.js
 
 (function (root) {
   "use strict";

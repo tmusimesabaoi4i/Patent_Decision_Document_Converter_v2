@@ -1,7 +1,7 @@
 (function (root) {
   "use strict";
 
-function to_HTML(str) {
+function toHtml(str) {
   if (str == null) return '<div class="patent-text"></div>';
 
   const src = String(str)
@@ -257,6 +257,6 @@ function to_HTML(str) {
 }
 
   root.makeHtml = {
-    to_HTML: to_HTML,
+    toHtml: toHtml,
   };
 })(globalThis);

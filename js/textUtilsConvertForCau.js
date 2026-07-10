@@ -1,4 +1,4 @@
-// ファイル名例: textUtilsConvertForCau.js
+// ファイル名: textUtilsConvertForCau.js
 
 (function (root) {
   "use strict";
@@ -284,7 +284,7 @@
    * @param {string} str - 1 行分の文字列
    * @returns {string} 整形済みの 1 行分の文字列
    */
-  function convertEachLine_ForCau(str) {
+  function convertEachLineForCau(str) {
     var raw = str == null ? "" : String(str);
 
     // 完全な空行はそのまま空行として返す
@@ -340,7 +340,7 @@
    *   「＜補正の示唆＞／＜ファミリー文献情報＞ブロックの終端」とみなす。
    *
    * この終端行自体および、それ以降の行（メール案内・署名など）は
-   * ブロック外として通常の行処理（convertEachLine_ForCau）に通す。
+   * ブロック外として通常の行処理（convertEachLineForCau）に通す。
    *
    * 実装方針：
    *   - 「pre + <補正をする際の注意> + tail」の 3 分割でテキストを扱う
@@ -404,7 +404,7 @@
    * - 行頭に「この拒絶理由通知の内容に関するお問合せ…」を含む行を
    *   ブロックの終端とみなし、inSuggestion / inFamilyInfo を解除。
    *   もし inFamilyInfo → false に切り替わる場合は、その直前に空行を 1 行挿入。
-   * - 上記いずれにも該当しない行は convertEachLine_ForCau() に委譲。
+   * - 上記いずれにも該当しない行は convertEachLineForCau() に委譲。
    *
    * @param {string} _marker - 未使用（将来拡張用）
    * @param {string} tail    - 処理対象部分
@@ -431,7 +431,7 @@
       ) {
         inSuggestion = true;
         inFamilyInfo = false;
-        outLines.push(convertEachLine_ForCau(line));
+        outLines.push(convertEachLineForCau(line));
         continue;
       }
 
@@ -441,7 +441,7 @@
       ) {
         inSuggestion = false;
         inFamilyInfo = true;
-        outLines.push(convertEachLine_ForCau(line));
+        outLines.push(convertEachLineForCau(line));
         continue;
       }
 
@@ -463,7 +463,7 @@
         inSuggestion = false;
 
         // この行自体は通常行として変換（インデントや数字整形のみ）
-        outLines.push(convertEachLine_ForCau(line));
+        outLines.push(convertEachLineForCau(line));
         continue;
       }
 
@@ -499,7 +499,7 @@
       // ------------------------------------
       // 上記いずれにも該当しない行は従来どおり行単位整形
       // ------------------------------------
-      outLines.push(convertEachLine_ForCau(line));
+      outLines.push(convertEachLineForCau(line));
     }
 
     return joinLines(outLines);
