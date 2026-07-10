@@ -8,7 +8,7 @@
 
 ## 1. アプリ内での位置づけ
 
-変換処理は次の 3 層で構成されています。
+変換処理は次の 6 層で構成されています。
 
 ```mermaid
 flowchart LR
@@ -17,7 +17,7 @@ flowchart LR
   Modes["modeFunctionLists.js"]
   Chains["runTextChains"]
   Registry["TextFilterRegistry"]
-  Filters["textUtils* 等"]
+  Filters["textUtils* / telecomAbbreviations 等"]
 
   UI --> App
   App -->|"NFKC 半角化"| App
@@ -34,7 +34,7 @@ flowchart LR
 | モード定義 | `modeFunctionLists.js` | モードキー → フィルタチェーン名の対応 |
 | チェーン実行 | `textFilterRegistry.js` | `runTextChains`・`TextFilterRegistry` の提供 |
 | フィルタ基盤 | `filterRegistry.js` | 名前付きリストの登録・順次実行 |
-| 変換関数 | `textUtils*` 等 | 実際の文字列変換 |
+| 変換関数 | `textUtils*`, `telecomAbbreviations.js` 等 | 実際の文字列変換 |
 
 ### 実行フロー
 
@@ -58,11 +58,12 @@ textUtilsInit.js           → root.textUtilsInit
 textUtilsMain.js           → root.textUtilsMain
 stripBlankLines.js         → root.stripBlankLines
 textUtilsConvertForDoc.js  → root.textUtilsConvertForDoc
+telecomAbbreviations.js    → root.telecomAbbreviations
 textUtilsConvertForCau.js  → root.textUtilsConvertForCau
 paragraphExtraction.js     → root.paragraphExtraction
 makeHtml.js                → root.makeHtml
 textFilterRegistry.js      → root.TextFilterRegistry, root.runTextChains
-modeFunctionLists.js               → root.ModeFunctionLists
+modeFunctionLists.js       → root.ModeFunctionLists
 app.js                     → 自動起動
 ```
 
@@ -96,12 +97,11 @@ app.js                     → 自動起動
 | 名前 | 処理内容 | 定義元 |
 |---|---|---|
 | `init` | 改行統一・半角化・制御文字除去・空行削除・行間正規化 | `textUtilsInit` |
-| `main` | 見出し整形・全角化・クレーム詰めなど | `textUtilsMain` |
-| `main_html` | `main` の HTML 向け版 | `textUtilsMain` |
-| `main_PCTENG` | 英語 PCT 向け（`alphaCase` なし） | `textUtilsMain` |
+| `main` | 略語辞書適用・見出し整形・全角化・クレーム詰めなど | `textUtilsMain`, `textUtilsConvertForCau` |
+| `main_PCTENG` | 英語 PCT 向け（`alphaCase` なし） | `textUtilsMain`, `textUtilsConvertForCau` |
 | `stripBlankLines` | セクション別の空行削除 | `stripBlankLines` |
 | `convertEnd` | 文書末尾の書式変換 | `textUtilsConvertForDoc`, `textUtilsConvertForCau` |
-| `finalAction` | 最終拒絶向け末尾処理 | `textUtilsConvertForDoc` |
+| `finalAction` | 最終拒絶向け末尾処理 | `textUtilsConvertForCau` |
 | `parExtract` | 段落・図番号の抽出 | `paragraphExtraction` |
 | `tohtml` | HTML 生成 | `makeHtml` |
 
@@ -125,6 +125,7 @@ app.js                     → 自動起動
 | 本文整形 | `textUtilsMain.js` / `main` 登録 |
 | セクション別空行削除 | `stripBlankLines.js` |
 | 末尾書式変換 | `textUtilsConvertForDoc.js`, `textUtilsConvertForCau.js` |
+| 通信・3GPP 略語の追加・変更 | `js/telecomAbbreviations.js`（`replaceMap` / `conditionalShortMap`） |
 | モードごとのパイプライン構成 | `modeFunctionLists.js` 内の `names` 配列 |
 | フィルタの登録・実行基盤 | 本ドキュメント §6 |
 
