@@ -1,6 +1,6 @@
 # Patent Decision Document Converter
 
-特許庁・各国特許庁の審査関連文書（拒絶理由通知、最終拒絶、補正却下、審査前報告書、PCT 文書など）を、社内の起案・翻訳ワークフロー向けに正規化・変換するブラウザツールです。
+特許庁・各国特許庁の審査関連文書（拒絶理由通知、最終拒絶、PCT 文書など）を、社内の起案・翻訳ワークフロー向けに正規化・変換するブラウザツールです。
 
 サーバーやビルドは不要で、`main.html` をブラウザで開くだけで使えます。
 
@@ -54,7 +54,7 @@ tools/
 
 ## 回帰テスト
 
-- `node tools/golden.js verify` … 全 8 モード × 12 fixture の変換結果を `tools/goldens/` とバイト単位で比較する
+- `node tools/golden.js verify` … 全 6 モード × 12 fixture の変換結果を `tools/goldens/` とバイト単位で比較する
 - `node tools/smoke.js` … 最小 DOM スタブでアプリを起動し、Convert / `Ctrl`+`Enter` / Copy の配線を確認する
 - 変換ルールを意図して変えたときだけ `node tools/golden.js capture` でゴールデンを更新し、diff をレビューする
 

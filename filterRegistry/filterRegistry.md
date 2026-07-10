@@ -77,8 +77,6 @@ app.js                     → 自動起動
 |---|---|---|
 | Office Action | `officeAction` | `normalize` → `formatBody` → `stripBlankLines` → `formatTail` |
 | Final Office Action | `finalOfficeAction` | `normalize` → `formatBody` → `stripBlankLines` → `formatBoilerplate` |
-| Amendment Refused | `amendmentRefused` | `normalize` → `formatBody` → `stripBlankLines` → `formatTail` |
-| Pre-examination Report | `preExaminationReport` | `normalize` → `formatBody` → `stripBlankLines` → `formatTail` |
 | PCT | `pct` | `normalize` → `formatBody` |
 | PCT (English) | `pct_eng` | `normalize` → `formatBody` |
 | Paragraphs | `paragraph` | `extractParagraphRefs` |

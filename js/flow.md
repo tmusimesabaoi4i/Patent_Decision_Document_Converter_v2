@@ -14,9 +14,9 @@ Convert / Copy の入り口から、モードハンドラ → フィルタチェ
 | 変換ショートカット | `Ctrl`+`Enter` / `⌘`+`Enter`（入力/出力テキストエリア上） | 変換パイプライン実行（Convert と同じ） | `AppCore._handleConvert`（`js/app.js`） |
 | Copy ボタン | `#copyBtn` の click | 出力テキストをクリップボードへコピー | `AppCore._handleCopy`（`js/app.js`） |
 | コピーショートカット | `Alt`+`Enter`（入力/出力テキストエリア上） | 出力テキストをコピー（Copy と同じ） | `AppCore._handleCopy`（`js/app.js`） |
-| モードラジオ（8 種） | `input[name="mode"]` の選択 | それ自体では何も実行しない。Convert 実行時に `_getSelectedModeKey` が現在の選択値を参照するだけ | （変換時に参照される） |
+| モードラジオ（6 種） | `input[name="mode"]` の選択 | それ自体では何も実行しない。Convert 実行時に `_getSelectedModeKey` が現在の選択値を参照するだけ | （変換時に参照される） |
 
-※ モードラジオの `value`（`officeAction` / `finalOfficeAction` / `amendmentRefused` / `preExaminationReport` / `pct` / `pct_eng` / `paragraph` / `html`）が、そのままモードキーとして使われます。
+※ モードラジオの `value`（`officeAction` / `finalOfficeAction` / `pct` / `pct_eng` / `paragraph` / `html`）が、そのままモードキーとして使われます。
 
 ---
 
@@ -61,15 +61,13 @@ flowchart TD
 |---|---|---|
 | `officeAction` | Office Action | `normalize` → `formatBody` → `stripBlankLines` → `formatTail` |
 | `finalOfficeAction` | Final Office Action | `normalize` → `formatBody` → `stripBlankLines` → `formatBoilerplate` |
-| `amendmentRefused` | Amendment Refused | `normalize` → `formatBody` → `stripBlankLines` → `formatTail` |
-| `preExaminationReport` | Pre-examination Report | `normalize` → `formatBody` → `stripBlankLines` → `formatTail` |
 | `pct` | PCT | `normalize` → `formatBody` |
 | `pct_eng` | PCT (English) | `normalize` → `formatBody` |
 | `paragraph` | Paragraphs | `extractParagraphRefs` |
 | `html` | to HTML | `toHtml` |
 
 補足:
-- `officeAction` / `amendmentRefused` / `preExaminationReport` の 3 モードは同一チェーン構成（`normalize → formatBody → stripBlankLines → formatTail`）です。
+- `officeAction` は `normalize → formatBody → stripBlankLines → formatTail` を実行します。
 - `finalOfficeAction` は 4 段目だけが異なり `formatTail` の代わりに `formatBoilerplate`（`formatBoilerplateLines` のみ）を実行します。
 - `pct` は末尾の空行削除・末尾整形を行わず `normalize → formatBody` のみ。`pct_eng` は `pct` と同じ構成（`normalize → formatBody`）です。
 - `paragraph` / `html` は前処理（`normalize`）を通さず、専用の単一チェーンのみを実行します。

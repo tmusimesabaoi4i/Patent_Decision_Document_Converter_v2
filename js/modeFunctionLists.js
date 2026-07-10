@@ -76,10 +76,6 @@
     officeAction: [makeChainModeHandler("officeAction", ["normalize", "formatBody", "stripBlankLines", "formatTail"])],
     // Final Office Action: 最後の拒絶理由通知 / Final Rejection
     finalOfficeAction: [makeChainModeHandler("finalOfficeAction", ["normalize", "formatBody", "stripBlankLines", "formatBoilerplate"])],
-    // Amendment Refused / Amendment Not Entered: 補正却下
-    amendmentRefused: [makeChainModeHandler("amendmentRefused", ["normalize", "formatBody", "stripBlankLines", "formatTail"])],
-    // Pre-examination Report / Report to Director: 前置報告
-    preExaminationReport: [makeChainModeHandler("preExaminationReport", ["normalize", "formatBody", "stripBlankLines", "formatTail"])],
     // PCT: 国際出願
     pct: [makeChainModeHandler("pct", ["normalize", "formatBody"])],
     // PCT (EN): 原文が主に英語の国際出願
