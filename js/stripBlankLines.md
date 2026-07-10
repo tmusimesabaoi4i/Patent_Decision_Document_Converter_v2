@@ -24,11 +24,17 @@ flowchart TD
     F7["stripBlankLinesInAddedNewMatter"]
   end
 
+  subgraph stripTightChain["stripBlankLinesTight チェーン（8 関数）"]
+    F8["stripBlankLinesInClaimsBlock"]
+  end
+
   subgraph formatBodyChain["formatBody チェーン（1 関数）"]
     TC["tightClaims"]
   end
 
   F1 & F2 & F3 & F4 & F5 & F6 & F7 --> SB
+  stripTightChain --> F1 & F2 & F3 & F4 & F5 & F6 & F7
+  F8 --> CLB["独自実装<br>（lookahead 正規表現）"]
   TC --> SBB
 ```
 
@@ -37,8 +43,8 @@ flowchart TD
 | 定義ファイル | `js/stripBlankLines.js` |
 | グローバル公開名 | `root.stripBlankLines` |
 | 依存 | `root.textPrimitives`（`splitLines` / `joinLines` / `isBlankLine` / `escapeRegExp`） |
-| チェーン登録 | `js/filterChains.js` の `filterChains.register("stripBlankLines", [...])` |
-| 実行されるモード | `officeAction` / `finalOfficeAction`（`normalize` → `formatBody` → **`stripBlankLines`** → …） |
+| チェーン登録 | `stripBlankLines`（7 関数）/ `stripBlankLinesTight`（8 関数・末尾に `stripBlankLinesInClaimsBlock`） |
+| 実行されるモード | `officeAction` / `finalOfficeAction` → `stripBlankLines`／`officeActionTight` → `stripBlankLinesTight` |
 | 対象外モード | `pct` / `pct_eng` / `paragraph` / `html` |
 
 ---
@@ -50,6 +56,7 @@ flowchart TD
 | エンジン | 使用する関数 | 空行判定 | マーカー直後・直前の改行（pad） | 内部の trim | 備考 |
 |---|---|---|---|---|---|
 | `stripBetween` | `stripBlankLinesIn*` 7 関数 | `textPrimitives.isBlankLine` | `pad.before` / `pad.after` で制御 | なし | 正規表現 `(start)([\s\S]*?)(end)` で非貪欲マッチ |
+| 独自（lookahead） | `stripBlankLinesInClaimsBlock` | `textPrimitives.isBlankLine` | ヘッダ直後 `\n`、次ヘッダ直前に空行 1 行を残す | なし | 終端は `(?=\n・請求項)` で先読み（消費しない） |
 | `stripBlankLinesBetween` | `tightClaims` | `isBlankLineLoose`（`\n` も空白類に含む緩和版） | なし（pad 概念なし） | `joinLines(outLines).trim()` あり | `stripBetween` と統合すると出力が変わるため並存 |
 
 ### `stripBetween` の処理手順
@@ -98,6 +105,42 @@ flowchart TD
 
 ---
 
+## stripBlankLinesTight チェーン — 請求項ヘッダブロック
+
+`stripBlankLines` の 7 関数に加え、8 番目として **`stripBlankLinesInClaimsBlock`** が追加されたチェーンです。`officeActionTight` モード専用。
+
+| 順 | 関数名 | 備考 |
+|---|---|---|
+| 1〜7 | `stripBlankLines` と同じ 7 関数 | 上表を参照 |
+| 8 | `stripBlankLinesInClaimsBlock` | 請求項ヘッダブロック内の空行削除（下表） |
+
+### `stripBlankLinesInClaimsBlock` の範囲定義
+
+`stripBetween` は使わず、行頭一致の正規表現＋先読み（lookahead）で範囲を切り出します。
+
+| 項目 | 内容 |
+|---|---|
+| 開始（ヘッダ群） | 行頭 `・請求項…`（任意で続けて `・引用文献等…` / `・備考…`） |
+| 終了（次ブロックの手前） | `(?=\n・請求項)` — 次の `・請求項` 行の直前まで（終端行は消費しない） |
+| 対象テキスト | ヘッダ群と次の `・請求項` の間の **本文** のみ |
+| 空行削除後 | ヘッダ直後に `\n`、本文、次ヘッダ直前に空行 1 行（`\n`）を残す |
+| 本文が空のとき | ヘッダ群が隣接している等、本文行が 0 行なら改変しない |
+| 対象外 | 最後のヘッダ群より後ろ（閉じヘッダのない本文） |
+
+#### ヘッダ群の正規表現（`CLAIMS_HEADER_SRC`）
+
+```
+・請求項[^\n]*(?:\n・引用文献等[^\n]*)?(?:\n・備考[^\n]*)?
+```
+
+| パターン | 例 |
+|---|---|
+| `・請求項` のみ | `・請求項` / `・請求項　１－３` |
+| `・請求項` + `・引用文献等` | 2 行ヘッダ群 |
+| `・請求項` + `・引用文献等` + `・備考` | 3 行ヘッダ群 |
+
+---
+
 ## formatBody チェーン — 『』内の空白行削除
 
 `stripBlankLines` チェーンとは別に、`formatBody` チェーンの最終ステップとして **`tightClaims`** が呼ばれます。
@@ -126,6 +169,7 @@ flowchart TD
 | `stripBlankLinesInPriority` | `stripBlankLines` | 優先権ブロック内の空行削除 |
 | `stripBlankLinesInAmendmentSuggestion` | `stripBlankLines` | 補正の示唆ブロック内の空行削除 |
 | `stripBlankLinesInAddedNewMatter` | `stripBlankLines` | 新規事項追加認定ブロック内の空行削除 |
+| `stripBlankLinesInClaimsBlock` | `stripBlankLinesTight` | 請求項ヘッダブロック（`・請求項` 群〜次の `・請求項` 手前）内の空行削除 |
 | `tightClaims` | `formatBody` | 請求項引用（`『…』`）内の空行削除 |
 
 ---
@@ -136,8 +180,15 @@ flowchart TD
 |---|---|---|
 | 1 | `normalize` | 全文の空行削除（`rmBlank`）・行間挿入（`gap`）— マーカー範囲とは無関係 |
 | 2 | `formatBody` | **`tightClaims`**：`『』` 内のみ空行削除 |
-| 3 | `stripBlankLines` | 上表 7 関数：各セクションのマーカー間のみ空行削除 |
+| 3 | `stripBlankLines` / `stripBlankLinesTight` | 各セクションのマーカー間の空行削除。Tight は加えて請求項ヘッダブロックも詰める |
 | 4 | `formatTail` / `formatBoilerplate` | 末尾ブロックの書式変換（空行削除エンジンは使わない） |
+
+### officeAction と officeActionTight の違い
+
+| モード | 3 段目チェーン | 請求項ヘッダブロック |
+|---|---|---|
+| `officeAction` | `stripBlankLines`（7 関数） | 処理しない |
+| `officeActionTight` | `stripBlankLinesTight`（8 関数） | `stripBlankLinesInClaimsBlock` で空行削除 |
 
 ---
 
@@ -147,6 +198,6 @@ flowchart TD
 |---|---|
 | 1. ヘルパ関数を追加 | `js/stripBlankLines.js`（`stripBetween(s, start, end, pad)` を呼ぶ） |
 | 2. 公開オブジェクトに登録 | 同ファイル末尾の `root.stripBlankLines = { ... }` |
-| 3. チェーンに追加 | `js/filterChains.js` の `filterChains.register("stripBlankLines", [...])` |
+| 3. チェーンに追加 | `js/filterChains.js` の `filterChains.register("stripBlankLines", [...])`（必要なら `stripBlankLinesTight` にも） |
 | 4. 存在チェックを更新 | 同ファイル先頭付近の `typeof ... !== "function"` 検証 |
 | 5. ドキュメント更新 | 本ファイル・`js/flow.md` |
