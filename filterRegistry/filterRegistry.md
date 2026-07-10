@@ -3,7 +3,6 @@
 本ドキュメントは、このアプリの **変換処理の全体像** と **`FilterRegistry` クラスの API** を扱います。
 
 - アプリの使い方 → [README.md](../README.md)
-- 行単位変換ライブラリ → [TextTransformer.md](../TextTransformer/TextTransformer.md)
 
 ---
 
@@ -46,8 +45,6 @@ flowchart LR
 5. `runTextChains` が `TextFilterRegistry.apply(name, text)` を名前の順に実行する
 6. 各フィルタリスト内の関数が変換を行い、結果が出力欄に表示される
 
-> `jaTypoChecker.js` は読み込まれていますが、`app.js` 内の呼び出しは現在コメントアウトされており、変換時には動作しません。
-
 ---
 
 ## 2. スクリプト読み込み順
@@ -66,11 +63,8 @@ paragraphExtraction.js     → root.paragraphExtraction
 makeHtml.js                → root.makeHtml
 defaultTextFilters.js      → root.TextFilterRegistry, root.runTextChains
 modeLists.js               → root.ModeFunctionLists
-jaTypoChecker.js           → root.JaTypoChecker
 app.js                     → 自動起動
 ```
-
-`TextTransformer.js` も読み込まれますが、現行パイプラインからは呼び出されていません（詳細は [TextTransformer.md](../TextTransformer/TextTransformer.md)）。
 
 ---
 
@@ -133,10 +127,6 @@ app.js                     → 自動起動
 | 末尾書式変換 | `textUtilsConvertForDoc.js`, `textUtilsConvertForCau.js` |
 | モードごとのパイプライン構成 | `modeLists.js` 内の `names` 配列 |
 | フィルタの登録・実行基盤 | 本ドキュメント §6 |
-
-### 行単位の新規ルールを書く場合
-
-`textUtils*` 系は文字列全体を対象にした変換です。行の範囲指定が必要な場合は [TextTransformer.md](../TextTransformer/TextTransformer.md) の `TextTransformer` を検討してください。
 
 ---
 

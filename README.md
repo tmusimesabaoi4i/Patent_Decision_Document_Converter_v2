@@ -18,7 +18,6 @@
 | 読む場面 | ドキュメント |
 |---|---|
 | 変換パイプラインの全体像・モード対応・フィルタの追加 | [filterRegistry/filterRegistry.md](filterRegistry/filterRegistry.md) |
-| 行単位の変換ライブラリ `TextTransformer` の使い方 | [TextTransformer/TextTransformer.md](TextTransformer/TextTransformer.md) |
 | アプリ本体・モード登録 | `js/app.js` 先頭コメント |
 | モード別パイプライン定義 | `js/modeLists.js` 先頭コメント |
 | フィルタ登録と `runTextChains` | `js/defaultTextFilters.js` 先頭コメント |
@@ -29,7 +28,6 @@
 main.html          … UI エントリーポイント
 js/                … アプリ本体・変換ロジック
 filterRegistry/    … フィルタパイプライン基盤（→ filterRegistry.md）
-TextTransformer/   … 行単位変換ライブラリ（→ TextTransformer.md）
 css/               … スタイル
 sample/            … 変換例文
 ```
