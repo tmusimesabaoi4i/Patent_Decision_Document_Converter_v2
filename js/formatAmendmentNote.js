@@ -1,22 +1,22 @@
-// ファイル名: textUtilsConvertForCau.js
+// ファイル名: formatAmendmentNote.js
 
 (function (root) {
   "use strict";
 
   // ============================================================
-  // 依存（textUtilsStd）
+  // 依存（textPrimitives）
   // ============================================================
-  var textUtilsStd = root.textUtilsStd;
-  if (!textUtilsStd) {
+  var textPrimitives = root.textPrimitives;
+  if (!textPrimitives) {
     // eslint-disable-next-line no-console
-    console.warn("textUtilsConvertForCau.js: root.textUtilsStd が見つかりません。textUtilsStd.js を先に読み込んでください。");
+    console.warn("formatAmendmentNote.js: root.textPrimitives が見つかりません。textPrimitives.js を先に読み込んでください。");
     return;
   }
-  // 行分割・行結合・全角半角変換などの共通プリミティブは textUtilsStd に集約した。
-  var splitLines = textUtilsStd.splitLines;
-  var joinLines = textUtilsStd.joinLines;
-  var hwAlnum = textUtilsStd.hwAlnum;
-  var fwNum = textUtilsStd.fwNum;
+  // 行分割・行結合・全角半角変換などの共通プリミティブは textPrimitives に集約した。
+  var splitLines = textPrimitives.splitLines;
+  var joinLines = textPrimitives.joinLines;
+  var hwAlnum = textPrimitives.hwAlnum;
+  var fwNum = textPrimitives.fwNum;
 
   // ============================================================
   // ＜補正の示唆＞ ブロック用
@@ -182,7 +182,7 @@
    * @param {string} str - 1 行分の文字列
    * @returns {string} 整形済みの 1 行分の文字列
    */
-  function convertEachLineForCau(str) {
+  function formatAmendmentNoteLine(str) {
     var raw = str == null ? "" : String(str);
 
     // 完全な空行はそのまま空行として返す
@@ -238,17 +238,17 @@
    *   「＜補正の示唆＞／＜ファミリー文献情報＞ブロックの終端」とみなす。
    *
    * この終端行自体および、それ以降の行（メール案内・署名など）は
-   * ブロック外として通常の行処理（convertEachLineForCau）に通す。
+   * ブロック外として通常の行処理（formatAmendmentNoteLine）に通す。
    *
    * 実装方針：
    *   - 「pre + <補正をする際の注意> + tail」の 3 分割でテキストを扱う
-   *   - tail 部分のみ processCauTail() に通して整形する
-   *   - 「<補正をする際の注意>」が存在しない場合は全文を processCauTail() に通す
+   *   - tail 部分のみ formatAmendmentNoteTail() に通して整形する
+   *   - 「<補正をする際の注意>」が存在しない場合は全文を formatAmendmentNoteTail() に通す
    *
    * @param {string} text - 全文テキスト
    * @returns {string} 整形済みテキスト
    */
-  function convertForCau(text) {
+  function formatAmendmentNoteBlock(text) {
     var input = String(text);
 
     // ([\s\S]*?)             → pre: 先頭〜最初の "<補正をする際の注意>" 直前まで
@@ -258,14 +258,14 @@
 
     if (pattern.test(input)) {
       return input.replace(pattern, function (_all, pre, marker, tail) {
-        var convertedTail = processCauTail(marker, tail);
+        var convertedTail = formatAmendmentNoteTail(marker, tail);
         return pre + marker + convertedTail;
       });
     }
 
     // 「<補正をする際の注意>」自体が無い場合：
-    // 全文を対象に（安全側に）processCauTail() を適用する。
-    return processCauTail("", input);
+    // 全文を対象に（安全側に）formatAmendmentNoteTail() を適用する。
+    return formatAmendmentNoteTail("", input);
   }
 
   /**
@@ -278,13 +278,13 @@
    * - 行頭に「この拒絶理由通知の内容に関するお問合せ…」を含む行を
    *   ブロックの終端とみなし、inSuggestion / inFamilyInfo を解除。
    *   もし inFamilyInfo → false に切り替わる場合は、その直前に空行を 1 行挿入。
-   * - 上記いずれにも該当しない行は convertEachLineForCau() に委譲。
+   * - 上記いずれにも該当しない行は formatAmendmentNoteLine() に委譲。
    *
    * @param {string} _marker - 未使用（将来拡張用）
    * @param {string} tail    - 処理対象部分
    * @returns {string}
    */
-  function processCauTail(_marker, tail) {
+  function formatAmendmentNoteTail(_marker, tail) {
     var lines = splitLines(tail);
     var outLines = [];
 
@@ -305,7 +305,7 @@
       ) {
         inSuggestion = true;
         inFamilyInfo = false;
-        outLines.push(convertEachLineForCau(line));
+        outLines.push(formatAmendmentNoteLine(line));
         continue;
       }
 
@@ -315,7 +315,7 @@
       ) {
         inSuggestion = false;
         inFamilyInfo = true;
-        outLines.push(convertEachLineForCau(line));
+        outLines.push(formatAmendmentNoteLine(line));
         continue;
       }
 
@@ -337,7 +337,7 @@
         inSuggestion = false;
 
         // この行自体は通常行として変換（インデントや数字整形のみ）
-        outLines.push(convertEachLineForCau(line));
+        outLines.push(formatAmendmentNoteLine(line));
         continue;
       }
 
@@ -373,7 +373,7 @@
       // ------------------------------------
       // 上記いずれにも該当しない行は従来どおり行単位整形
       // ------------------------------------
-      outLines.push(convertEachLineForCau(line));
+      outLines.push(formatAmendmentNoteLine(line));
     }
 
     return joinLines(outLines);
@@ -387,7 +387,7 @@
   // ----------------------------------------
   // グローバルへのエクスポート
   // ----------------------------------------
-  root.textUtilsConvertForCau = {
-    convertForCau: convertForCau,
+  root.formatAmendmentNote = {
+    formatAmendmentNoteBlock: formatAmendmentNoteBlock,
   };
 })(globalThis);

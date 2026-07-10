@@ -1,22 +1,24 @@
 /**
- * textFilterRegistry.js
+ * filterChains.js
  * --------------------------------------------------------------------------
- * 名前付きフィルタチェーン（init / main / stripBlankLines / convertEnd など）を
+ * 名前付きフィルタチェーン（normalize / formatBody / stripBlankLines / formatTail など）を
  * FilterRegistry インスタンスに登録し、グローバルから利用できるようにする
  * 設定用スクリプト。
  *
  * ▼ 依存（先に読み込まれている前提）
  *   - filterRegistry/filterRegistry.js（root.FilterRegistry）
- *   - textUtilsInit（root.textUtilsInit）
- *   - textUtilsMain（root.textUtilsMain）
+ *   - normalizeText（root.normalizeText）
+ *   - formatBody（root.formatBody）
  *   - stripBlankLines（root.stripBlankLines）
- *   - textUtilsConvertForDoc（root.textUtilsConvertForDoc）
- *   - textUtilsConvertForCau（root.textUtilsConvertForCau）
+ *   - formatSearchResult（root.formatSearchResult）
+ *   - formatAmendmentNote（root.formatAmendmentNote）
+ *   - replaceAbbreviations（root.replaceAbbreviations）
+ *   - formatBoilerplate（root.formatBoilerplate）
  *   - paragraphExtraction（root.paragraphExtraction）
  *   - makeHtml（root.makeHtml）
  *
  * ▼ 公開されるもの
- *   - root.TextFilterRegistry
+ *   - root.filterChains
  *       各種フィルタチェーンを登録済みの FilterRegistry インスタンス。
  *   - root.runTextChains(names, str, ...)
  *       複数のフィルタチェーンを順番に実行する汎用ヘルパ。
@@ -44,26 +46,26 @@
   }
 
   /**
-   * textUtilsInit 側のユーティリティオブジェクトを取得
-   * - textUtilsInit.js で root.textUtilsInit にエクスポートされている前提。
+   * normalizeText 側のユーティリティオブジェクトを取得
+   * - normalizeText.js で root.normalizeText にエクスポートされている前提。
    */
-  var TextLib_Init = root.textUtilsInit || null;
+  var Lib_NormalizeText = root.normalizeText || null;
 
-  if (!TextLib_Init) {
+  if (!Lib_NormalizeText) {
     // eslint-disable-next-line no-console
-    console.warn("textUtilsInit が見つかりません。textUtilsInit.js の中でグローバル名を確認してください。");
+    console.warn("normalizeText が見つかりません。normalizeText.js の中でグローバル名を確認してください。");
     return;
   }
 
   // 必要なフィルタ関数を取り出す
-  var nl = TextLib_Init.nl;
-  var hw = TextLib_Init.hw;
-  var lead = TextLib_Init.lead;
-  var clean = TextLib_Init.clean;
-  var rmBlank = TextLib_Init.rmBlank;
-  var squeeze = TextLib_Init.squeeze;
-  var trim = TextLib_Init.trim;
-  var gap = TextLib_Init.gap;
+  var nl = Lib_NormalizeText.nl;
+  var hw = Lib_NormalizeText.hw;
+  var lead = Lib_NormalizeText.lead;
+  var clean = Lib_NormalizeText.clean;
+  var rmBlank = Lib_NormalizeText.rmBlank;
+  var squeeze = Lib_NormalizeText.squeeze;
+  var trim = Lib_NormalizeText.trim;
+  var gap = Lib_NormalizeText.gap;
 
   // どれか 1 つでも欠けている場合は警告を出して終了
   if (
@@ -77,51 +79,51 @@
     typeof lead !== "function"
   ) {
     // eslint-disable-next-line no-console
-    console.warn("nl, hw, lead, clean, rmBlank, squeeze, trim, gap のいずれかが定義されていません。textUtilsInit.js を確認してください。");
+    console.warn("nl, hw, lead, clean, rmBlank, squeeze, trim, gap のいずれかが定義されていません。normalizeText.js を確認してください。");
     return;
   }
 
   /**
-   * textUtilsMain 側のユーティリティオブジェクトを取得
-   * - textUtilsMain.js で root.textUtilsMain にエクスポートされている前提。
+   * formatBody 側のユーティリティオブジェクトを取得
+   * - formatBody.js で root.formatBody にエクスポートされている前提。
    */
-  var TextLib_Main = root.textUtilsMain || null;
+  var Lib_FormatBody = root.formatBody || null;
 
-  if (!TextLib_Main) {
+  if (!Lib_FormatBody) {
     // eslint-disable-next-line no-console
-    console.warn("textUtilsMain が見つかりません。textUtilsMain.js の中でグローバル名を確認してください。");
+    console.warn("formatBody が見つかりません。formatBody.js の中でグローバル名を確認してください。");
     return;
   }
 
   // 必要なフィルタ関数を取り出す
-  var padHead = TextLib_Main.padHead;
-  var trimHead = TextLib_Main.trimHead;
-  var tightBelowBullet = TextLib_Main.tightBelowBullet;
-  var fwHead = TextLib_Main.fwHead;
-  var fwNumLaw = TextLib_Main.fwNumLaw;
-  var fwRefLaw = TextLib_Main.fwRefLaw;
+  var padHead = Lib_FormatBody.padHead;
+  var trimHead = Lib_FormatBody.trimHead;
+  var tightBelowBullet = Lib_FormatBody.tightBelowBullet;
+  var fwHead = Lib_FormatBody.fwHead;
+  var fwNumLaw = Lib_FormatBody.fwNumLaw;
+  var fwRefLaw = Lib_FormatBody.fwRefLaw;
 
   /**
    * stripBlankLines 側のユーティリティオブジェクトを取得
    * - stripBlankLines.js で root.stripBlankLines にエクスポートされている前提。
    */
-  var TextLib_BlankLines = root.stripBlankLines || null;
+  var Lib_StripBlankLines = root.stripBlankLines || null;
 
-  if (!TextLib_BlankLines) {
+  if (!Lib_StripBlankLines) {
     // eslint-disable-next-line no-console
     console.warn("stripBlankLines が見つかりません。stripBlankLines.js の中でグローバル名を確認してください。");
     return;
   }
 
   // 必要なフィルタ関数を取り出す
-  var stripBlankLinesInCorrectionNote = TextLib_BlankLines.stripBlankLinesInCorrectionNote;
-  var stripBlankLinesInSearchResult = TextLib_BlankLines.stripBlankLinesInSearchResult;
-  var stripBlankLinesInCitation = TextLib_BlankLines.stripBlankLinesInCitation;
-  var stripBlankLinesInAppendix = TextLib_BlankLines.stripBlankLinesInAppendix;
-  var stripBlankLinesInPriority = TextLib_BlankLines.stripBlankLinesInPriority;
-  var stripBlankLinesInAmendmentSuggestion = TextLib_BlankLines.stripBlankLinesInAmendmentSuggestion;
-  var stripBlankLinesInAddedNewMatter = TextLib_BlankLines.stripBlankLinesInAddedNewMatter;
-  var tightClaims = TextLib_BlankLines.tightClaims;
+  var stripBlankLinesInCorrectionNote = Lib_StripBlankLines.stripBlankLinesInCorrectionNote;
+  var stripBlankLinesInSearchResult = Lib_StripBlankLines.stripBlankLinesInSearchResult;
+  var stripBlankLinesInCitation = Lib_StripBlankLines.stripBlankLinesInCitation;
+  var stripBlankLinesInAppendix = Lib_StripBlankLines.stripBlankLinesInAppendix;
+  var stripBlankLinesInPriority = Lib_StripBlankLines.stripBlankLinesInPriority;
+  var stripBlankLinesInAmendmentSuggestion = Lib_StripBlankLines.stripBlankLinesInAmendmentSuggestion;
+  var stripBlankLinesInAddedNewMatter = Lib_StripBlankLines.stripBlankLinesInAddedNewMatter;
+  var tightClaims = Lib_StripBlankLines.tightClaims;
 
   // どれか 1 つでも欠けている場合は警告を出して終了
   if (
@@ -139,33 +141,33 @@
   }
 
   /**
-   * textUtilsConvertForDoc 側のユーティリティオブジェクトを取得
-   * - textUtilsConvertForDoc.js で root.textUtilsConvertForDoc にエクスポートされている前提。
+   * formatSearchResult 側のユーティリティオブジェクトを取得
+   * - formatSearchResult.js で root.formatSearchResult にエクスポートされている前提。
    */
-  var TextLib_ConvertForDoc = root.textUtilsConvertForDoc || null;
+  var Lib_FormatSearchResult = root.formatSearchResult || null;
 
-  if (!TextLib_ConvertForDoc) {
+  if (!Lib_FormatSearchResult) {
     // eslint-disable-next-line no-console
-    console.warn("textUtilsConvertForDoc が見つかりません。textUtilsConvertForDoc.js の中でグローバル名を確認してください。");
+    console.warn("formatSearchResult が見つかりません。formatSearchResult.js の中でグローバル名を確認してください。");
     return;
   }
 
   /**
-   * textUtilsConvertForCau 側のユーティリティオブジェクトを取得
-   * - textUtilsConvertForCau.js で root.textUtilsConvertForCau にエクスポートされている前提。
+   * formatAmendmentNote 側のユーティリティオブジェクトを取得
+   * - formatAmendmentNote.js で root.formatAmendmentNote にエクスポートされている前提。
    */
-  var TextLib_ConvertForCau = root.textUtilsConvertForCau || null;
+  var Lib_FormatAmendmentNote = root.formatAmendmentNote || null;
 
-  if (!TextLib_ConvertForCau) {
+  if (!Lib_FormatAmendmentNote) {
     // eslint-disable-next-line no-console
-    console.warn("textUtilsConvertForCau が見つかりません。textUtilsConvertForCau.js の中でグローバル名を確認してください。");
+    console.warn("formatAmendmentNote が見つかりません。formatAmendmentNote.js の中でグローバル名を確認してください。");
     return;
   }
 
   // 必要なフィルタ関数を取り出す
-  var convertForDoc = TextLib_ConvertForDoc.convertForDoc;
-  var convertForFamily = TextLib_ConvertForDoc.convertForFamily;
-  var convertForCau = TextLib_ConvertForCau.convertForCau;
+  var formatSearchResultBlock = Lib_FormatSearchResult.formatSearchResultBlock;
+  var formatFamilyInfoBlock = Lib_FormatSearchResult.formatFamilyInfoBlock;
+  var formatAmendmentNoteBlock = Lib_FormatAmendmentNote.formatAmendmentNoteBlock;
 
   /**
    * replaceAbbreviations（略語置換エンジン）を取得
@@ -178,7 +180,7 @@
     return;
   }
 
-  var applyFlexibleMap = Lib_ReplaceAbbreviations.applyFlexibleMap;
+  var replaceAbbreviations = Lib_ReplaceAbbreviations.replaceAbbreviations;
 
   /**
    * formatBoilerplate（定型行整形）を取得
@@ -191,7 +193,7 @@
     return;
   }
 
-  var convertForOther = Lib_FormatBoilerplate.convertForOther;
+  var formatBoilerplateLines = Lib_FormatBoilerplate.formatBoilerplateLines;
 
   var paragraphExtraction = root.paragraphExtraction || null;
   var makeHtml = root.makeHtml || null;
@@ -209,7 +211,7 @@
    * - hooks と defaults は最低限の設定のみを行い、
    *   必要に応じて後から差し替えや上書きができるようにしておく。
    */
-  var textFilterRegistry = new FilterRegistry({
+  var filterChains = new FilterRegistry({
     hooks: {
       /**
        * apply 実行前フック
@@ -242,7 +244,7 @@
         // 本例では単純にコンソールへ出力するのみ。
         // 実運用では、ここで監視連携やユーザー向けログ出力などを実装できる。
         // eslint-disable-next-line no-console
-        console.error("[TextFilterRegistry onError]", {
+        console.error("[filterChains onError]", {
           name: name,
           stage: stage,
           stepIndex: stepIndex,
@@ -276,7 +278,7 @@
    *   7. gap     : 行間の空行を「ちょうど 1 行」に正規化
    *   8. lead    : 先頭に改行を 1 つだけ付与
    */
-  textFilterRegistry.register("normalize", [
+  filterChains.register("normalize", [
     nl,
     hw,
     clean,
@@ -287,8 +289,8 @@
     lead
   ]);
 
-  textFilterRegistry.register("formatBody", [
-    applyFlexibleMap,
+  filterChains.register("formatBody", [
+    replaceAbbreviations,
     padHead,
     trimHead,
     tightBelowBullet, // 下の改行を詰める(箇条書き系は全角になると反応しないので、)
@@ -298,7 +300,7 @@
     tightClaims,
   ]);
 
-  textFilterRegistry.register("stripBlankLines", [
+  filterChains.register("stripBlankLines", [
     stripBlankLinesInCorrectionNote,
     stripBlankLinesInSearchResult,
     stripBlankLinesInCitation,
@@ -308,23 +310,23 @@
     stripBlankLinesInAddedNewMatter
   ]);
 
-  textFilterRegistry.register("formatTail", [
-    convertForDoc,
-    convertForFamily,
-    convertForCau,
-    convertForOther,
-    applyFlexibleMap,
+  filterChains.register("formatTail", [
+    formatSearchResultBlock,
+    formatFamilyInfoBlock,
+    formatAmendmentNoteBlock,
+    formatBoilerplateLines,
+    replaceAbbreviations,
   ]);
 
-  textFilterRegistry.register("formatBoilerplate", [
-    convertForOther,
+  filterChains.register("formatBoilerplate", [
+    formatBoilerplateLines,
   ]);
 
-  textFilterRegistry.register("extractParagraphRefs", [
+  filterChains.register("extractParagraphRefs", [
     extractParagraphAndFigureRefs,
   ]);
 
-  textFilterRegistry.register("toHtml", [
+  filterChains.register("toHtml", [
     toHtml,
   ]);
 
@@ -333,12 +335,12 @@
   // -------------------------------------------------------------------------
 
   /**
-   * root.TextFilterRegistry という名前で公開する。
+   * root.filterChains という名前で公開する。
    * - 他のスクリプトから:
-   *     TextFilterRegistry.apply("normalize", text).then(...);
+   *     filterChains.apply("normalize", text).then(...);
    *   のように利用できる。
    */
-  root.TextFilterRegistry = textFilterRegistry;
+  root.filterChains = filterChains;
 
   // -----------------------------------------------------------------------
   // 複数パイプライン名を順に適用する汎用ヘルパ
@@ -359,11 +361,11 @@
    * @returns {Promise<string>} 最終的な変換結果文字列
    */
   root.runTextChains = function (names, str, invokeArgs, options) {
-    if (!root.TextFilterRegistry || typeof root.TextFilterRegistry.apply !== "function") {
+    if (!root.filterChains || typeof root.filterChains.apply !== "function") {
       return Promise.resolve(str == null ? "" : String(str));
     }
 
-    var reg = root.TextFilterRegistry;
+    var reg = root.filterChains;
     var listNames = Array.isArray(names) ? names.slice() : [];
     var opts = options || {};
     var stopOnError = opts.stopOnError !== false; // デフォルト true

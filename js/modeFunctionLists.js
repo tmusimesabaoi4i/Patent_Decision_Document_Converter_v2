@@ -23,7 +23,7 @@
  *
  * ▼ 実行するチェーンを増やしたい場合
  *   - makeChainModeHandler の第 2 引数（names 配列）にチェーン名を追加してください。
- *     チェーン名は TextFilterRegistry に登録された名前です。
+ *     チェーン名は filterChains に登録された名前です。
  *
  * ▼ App との連携（ローカル HTML 前提）
  *   1. main.html で app.js より先に modeFunctionLists.js を読み込む。
@@ -47,7 +47,7 @@
    * - エラー時はログを出して元のテキストを返し、UI を壊さない。
    *
    * @param {string} label エラーログに使うモード名
-   * @param {string[]} names 実行するフィルタリスト名（TextFilterRegistry 登録名）
+   * @param {string[]} names 実行するフィルタリスト名（filterChains 登録名）
    * @returns {(text: string) => string | Promise<string>}
    */
   function makeChainModeHandler(label, names) {

@@ -9,10 +9,10 @@
  *       stripBlankLinesInCorrectionNote, stripBlankLinesInSearchResult,
  *       stripBlankLinesInCitation, stripBlankLinesInAppendix,
  *       stripBlankLinesInPriority, stripBlankLinesInAmendmentSuggestion,
- *       stripBlankLinesInAddedNewMatter
+ *       stripBlankLinesInAddedNewMatter, tightClaims
  *
  * ▼ 依存
- *   - root.textUtilsStd（splitLines / joinLines / isBlankLine / escapeRegExp）
+ *   - root.textPrimitives（splitLines / joinLines / isBlankLine / escapeRegExp）
  * ---------------------------------------------------------------------------
  */
 
@@ -20,29 +20,29 @@
   "use strict";
 
   // ========================================================================
-  // 依存（textUtilsStd）
+  // 依存（textPrimitives）
   // ========================================================================
 
-  var textUtilsStd = root.textUtilsStd;
-  if (!textUtilsStd) {
+  var textPrimitives = root.textPrimitives;
+  if (!textPrimitives) {
     // eslint-disable-next-line no-console
-    console.warn("stripBlankLines.js: root.textUtilsStd が見つかりません。textUtilsStd.js を先に読み込んでください。");
+    console.warn("stripBlankLines.js: root.textPrimitives が見つかりません。textPrimitives.js を先に読み込んでください。");
     return;
   }
-  var splitLines = textUtilsStd.splitLines;
-  var joinLines = textUtilsStd.joinLines;
-  var isBlankLine = textUtilsStd.isBlankLine;
-  var escapeRegExp = textUtilsStd.escapeRegExp;
+  var splitLines = textPrimitives.splitLines;
+  var joinLines = textPrimitives.joinLines;
+  var isBlankLine = textPrimitives.isBlankLine;
+  var escapeRegExp = textPrimitives.escapeRegExp;
 
   // ========================================================================
   // 内部共通ユーティリティ
   // ========================================================================
 
-  // 行分割・空行判定などの共通プリミティブは textUtilsStd に集約した。
+  // 行分割・空行判定などの共通プリミティブは textPrimitives に集約した。
   //（splitLines の空入力の扱いも、全呼び出し箇所（inner は必ず文字列）で等価）
 
   // ========================================================================
-  // 8. 主張部分（特定範囲内の空白行削除）
+  // マーカー領域内の空白行削除
   // ========================================================================
 
   /**

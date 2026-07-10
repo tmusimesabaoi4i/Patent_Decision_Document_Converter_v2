@@ -1,4 +1,4 @@
-// ファイル名: textUtilsConvertForDoc.js
+// ファイル名: formatSearchResult.js
 
 (function (root) {
   "use strict";
@@ -15,23 +15,26 @@
    *  - 行ごとのパターン判定＆整形（インデント調整・ラベル整形など）
    *  - 先行技術文献調査の記録部分だけを抜き出して整形するラッパ処理
    *
+   * ▼ 公開するグローバル
+   *  - root.formatSearchResult（formatSearchResultBlock / formatFamilyInfoBlock）
+   *
    * ▼ 依存
-   *  - root.textUtilsStd（splitLines / joinLines / hwAlnum）
+   *  - root.textPrimitives（splitLines / joinLines / hwAlnum）
    */
 
   // ============================================================
-  // 依存（textUtilsStd）
+  // 依存（textPrimitives）
   // ============================================================
-  var textUtilsStd = root.textUtilsStd;
-  if (!textUtilsStd) {
+  var textPrimitives = root.textPrimitives;
+  if (!textPrimitives) {
     // eslint-disable-next-line no-console
-    console.warn("textUtilsConvertForDoc.js: root.textUtilsStd が見つかりません。textUtilsStd.js を先に読み込んでください。");
+    console.warn("formatSearchResult.js: root.textPrimitives が見つかりません。textPrimitives.js を先に読み込んでください。");
     return;
   }
-  // 行分割・行結合・全角英数字の半角化などの共通プリミティブは textUtilsStd に集約した。
-  var splitLines = textUtilsStd.splitLines;
-  var joinLines = textUtilsStd.joinLines;
-  var hwAlnum = textUtilsStd.hwAlnum;
+  // 行分割・行結合・全角英数字の半角化などの共通プリミティブは textPrimitives に集約した。
+  var splitLines = textPrimitives.splitLines;
+  var joinLines = textPrimitives.joinLines;
+  var hwAlnum = textPrimitives.hwAlnum;
 
   /**
    * 単一行をルールベースで整形する。
@@ -52,7 +55,7 @@
    * @param {string} str - 1 行分の文字列
    * @returns {string} 整形済みの 1 行分の文字列
    */
-  function convertEachLine(str) {
+  function formatSearchResultLine(str) {
     var raw = str == null ? "" : String(str);
     var s = raw.trim(); // 行頭・行末の空白を削除
 
@@ -106,7 +109,7 @@
 
 
     // デバッグしたいときだけコメントアウトを外す
-    // console.log("[convertEachLine]", s);
+    // console.log("[formatSearchResultLine]", s);
 
     // ------------------------------
     // 固定文言に対する完全一致マッチ
@@ -208,7 +211,7 @@
     return "　　　　　　　　" + s;
   }
 
-  function convertEachLineForFamily(str) {
+  function formatFamilyInfoLine(str) {
     var raw = str == null ? "" : String(str);
     var s = raw.trim(); // 行頭・行末の空白を削除
 
@@ -221,7 +224,7 @@
     s = hwAlnum(s);
 
     // デバッグしたいときだけコメントアウトを外す
-    // console.log("[convertEachLine]", s);
+    // console.log("[formatSearchResultLine]", s);
 
     // ------------------------------
     // 固定文言に対する完全一致マッチ
@@ -430,14 +433,14 @@
    *
    * マッチした範囲のうち「内部部分（キャプチャ2）」を:
    *   - 行に分解（splitLines）
-   *   - 各行を convertEachLine() で整形
+   *   - 各行を formatSearchResultLine() で整形
    *   - 行を結合（joinLines）
    * した上で、前後（ハイフン行／固定メッセージ）はそのまま維持する。
    *
    * @param {string} text - 全文テキスト
    * @returns {string} 内部だけ行整形済みのテキスト
    */
-  function convertForDoc(text) {
+  function formatSearchResultBlock(text) {
     var str = String(text);
     
     str = convertBeforeKirokuLineToFullWidth(str);
@@ -451,7 +454,7 @@
 
       // 各行をルールベースで整形
       var outLines = innerLines.map(function (line) {
-        return convertEachLine(line);
+        return formatSearchResultLine(line);
       });
 
       // ハイフン行 / 整形後テキスト / 固定メッセージ の順で再構成
@@ -461,7 +464,7 @@
     });
   }
 
-  function convertForFamily(text) {
+  function formatFamilyInfoBlock(text) {
     // ※注意：
     //   実際の本文が「＜ファミリー文献情報＞」（全角カギ）なのか
     //   「<ファミリー文献情報>」（半角カギ）なのかでパターンを変えてください。
@@ -480,7 +483,7 @@
 
       // 各行を既存のルールベース関数で整形
       var outLines = lines.map(function (line) {
-        return convertEachLineForFamily(line);
+        return formatFamilyInfoLine(line);
       });
 
       // 先頭の見出し行（header）と末尾の問い合わせ文（footer）はそのまま残し、
@@ -493,14 +496,14 @@
   // グローバルへのエクスポート
   // ----------------------------------------
   /**
-   * textUtilsConvertForDoc 名前空間として公開。
+   * formatSearchResult 名前空間として公開。
    *
    * 使用例:
-   *   const out = textUtilsConvertForDoc.convertForDoc(inputText);
+   *   const out = formatSearchResult.formatSearchResultBlock(inputText);
    */
-  root.textUtilsConvertForDoc = {
+  root.formatSearchResult = {
     // 先行技術文献調査ブロック内部の一括変換
-    convertForDoc: convertForDoc,
-    convertForFamily: convertForFamily,
+    formatSearchResultBlock: formatSearchResultBlock,
+    formatFamilyInfoBlock: formatFamilyInfoBlock,
   };
 })(globalThis);

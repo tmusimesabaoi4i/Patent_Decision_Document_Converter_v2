@@ -3,7 +3,7 @@
 // 目的: 通信・3GPP 系略語の置換辞書（純データ、ロジックなし）
 // 公開グローバル: root.telecomAbbreviations
 // 依存: なし
-// 利用側: textUtilsConvertForCau.js
+// 利用側: replaceAbbreviations.js
 
 (function (root) {
   "use strict";

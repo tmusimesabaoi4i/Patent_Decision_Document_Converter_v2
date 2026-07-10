@@ -1,5 +1,5 @@
 /**
- * textUtilsStd.js
+ * textPrimitives.js
  * ---------------------------------------------------------------------------
  * 低レベルなテキスト変換プリミティブを集めた共有モジュール。
  *
@@ -8,7 +8,7 @@
  *     基礎的なテキスト変換関数をまとめて提供する。
  *
  * ▼ 公開するグローバル
- *   - root.textUtilsStd
+ *   - root.textPrimitives
  *       nl, joinLines, splitLines,
  *       fwNum, hwNum, fwSym, hwSym, fwAlpha, hwAlpha,
  *       fwAlnum, hwAlnum, fw, hw,
@@ -483,7 +483,7 @@
         return String(text).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     }
 
-  root.textUtilsStd = {
+  root.textPrimitives = {
     nl: nl,                     // 改行コードを統一する
     joinLines: joinLines,       // 配列化を \n で結合して文字列に戻す
     splitLines: splitLines,     // すべての改行コード (\r\n, \r, \n) を \n に正規化して配列化

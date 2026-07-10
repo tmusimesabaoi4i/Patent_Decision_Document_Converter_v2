@@ -2,7 +2,7 @@
   "use strict";
 
   /**
-   * textUtilsMain.js
+   * formatBody.js
    * ------------------------------------------------------------------------
    * 特許文書向けテキスト整形ユーティリティ（拡張性重視・過剰変換抑制版）。
    *
@@ -12,31 +12,31 @@
    *     保護したうえで変換する。
    *
    * ▼ 公開するグローバル
-   *   - root.textUtilsMain
+   *   - root.formatBody
    *       padHead, trimHead, tightBelowBullet, fwHead,
    *       fwNumLaw, fwRefLaw, tightClaims
    *
    * ▼ 依存
-   *   - root.textUtilsStd（joinLines / splitLines / fwNum / fwAlnum / fw / escapeRegExp ほか）
+   *   - root.textPrimitives（joinLines / splitLines / fwNum / fwAlnum / fw / escapeRegExp ほか）
    * ------------------------------------------------------------------------
    */
 
   // ======================================================================
-  // 依存（textUtilsStd）
+  // 依存（textPrimitives）
   // ======================================================================
 
-  var textUtilsStd = root.textUtilsStd || null;
-  if (!textUtilsStd) {
+  var textPrimitives = root.textPrimitives || null;
+  if (!textPrimitives) {
     // eslint-disable-next-line no-console
-    console.warn("textUtilsMain.js: root.textUtilsStd が見つかりません。textUtilsStd を先に読み込んでください。");
+    console.warn("formatBody.js: root.textPrimitives が見つかりません。textPrimitives を先に読み込んでください。");
     return;
   }
 
-  var joinLines = textUtilsStd.joinLines;
-  var splitLines = textUtilsStd.splitLines;
-  var fwNum = textUtilsStd.fwNum;     // 数字のみ全角化
-  var fwAlnum = textUtilsStd.fwAlnum; // 英数字を全角化
-  var escapeRegExp = textUtilsStd.escapeRegExp; // 正規表現メタ文字のエスケープ
+  var joinLines = textPrimitives.joinLines;
+  var splitLines = textPrimitives.splitLines;
+  var fwNum = textPrimitives.fwNum;     // 数字のみ全角化
+  var fwAlnum = textPrimitives.fwAlnum; // 英数字を全角化
+  var escapeRegExp = textPrimitives.escapeRegExp; // 正規表現メタ文字のエスケープ
 
   // ======================================================================
   // 内部ユーティリティ
@@ -47,7 +47,7 @@
    * @param {string} line
    * @returns {boolean}
    */
-  // intentionally local: textUtilsStd.isBlankLine とは挙動が異なる（\n も空白類に含み、String() 変換を伴う）
+  // intentionally local: textPrimitives.isBlankLine とは挙動が異なる（\n も空白類に含み、String() 変換を伴う）
   function isBlankLine(line) {
     return /^[ \t\r\n\f\v\u3000]*$/.test(String(line || ""));
   }
@@ -62,13 +62,13 @@
   }
 
   /**
-   * padLeftZero（左ゼロ詰め）
-   * - ゼロは半角 "0" を使用（後段で fwNum する運用が多く、ここで全角にしない）
+   * padWithFullWidthSpace（左側を全角スペースで詰める）
+   * - パディング文字は全角スペース "　" を使用する（ゼロ詰めではない）。
    * @param {number|string} y
    * @param {number} n
    * @returns {string}
    */
-  function padLeftZero(y, n) {
+  function padWithFullWidthSpace(y, n) {
     n = Math.floor(Number(n));
     if (!isFinite(n) || n <= 0) return String(y);
 
@@ -92,7 +92,7 @@
    * @param {string} s
    * @returns {string}
    */
-  // intentionally local: textUtilsStd.escapeRegExp とは挙動が異なる（- と / も追加でエスケープする）
+  // intentionally local: textPrimitives.escapeRegExp とは挙動が異なる（- と / も追加でエスケープする）
   function escapeForRegExp(s) {
     return String(s || "").replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
   }
@@ -105,12 +105,12 @@
   /**
    * 呼び出し側で拡張できる設定
    * 例）
-   *   root.textUtilsMainConfig = {
+   *   root.formatBodyConfig = {
    *     dotMarks: ["・","●",...],
    *     heading: { maxDigits: 2, maxDepth: 3, alphaMax: 2 }
    *   };
    */
-  var CFG = root.textUtilsMainConfig || {};
+  var CFG = root.formatBodyConfig || {};
 
   // ======================================================================
   // 箇条書き・見出し判定（RegExp ビルダー方式）
@@ -390,19 +390,19 @@
    * 行頭が「●」で始まる行だけを全角化する
    * - 「文頭」とは「文字列先頭」または「改行 \n の直後」を指す（= 行の先頭 ^）。
    * - 行頭に空白がある「　●...」「 ●...」は対象外（※必要なら後で拡張可能）。
-   * - 変換は textUtilsStd.fw（文字列全体を全角化する関数）に委譲する想定。
+   * - 変換は textPrimitives.fw（文字列全体を全角化する関数）に委譲する想定。
    *
    * @param {string} str 入力文字列
    * @returns {string} 「●」行のみ全角化された文字列
    */
   function fwLineStartsWithBlackDot(str) {
     var s = String(str || "");
-    var fw = root.textUtilsStd && root.textUtilsStd.fw ? root.textUtilsStd.fw : null;
-    var splitLines = root.textUtilsStd && root.textUtilsStd.splitLines ? root.textUtilsStd.splitLines : null;
-    var joinLines = root.textUtilsStd && root.textUtilsStd.joinLines ? root.textUtilsStd.joinLines : null;
+    var fw = root.textPrimitives && root.textPrimitives.fw ? root.textPrimitives.fw : null;
+    var splitLines = root.textPrimitives && root.textPrimitives.splitLines ? root.textPrimitives.splitLines : null;
+    var joinLines = root.textPrimitives && root.textPrimitives.joinLines ? root.textPrimitives.joinLines : null;
 
     if (!fw || !splitLines || !joinLines) {
-      // textUtilsStd が無い場合は安全側でそのまま返す
+      // textPrimitives が無い場合は安全側でそのまま返す
       return s;
     }
 
@@ -417,12 +417,12 @@
   }
   function fwLineStartsWithSmallDot(str) {
     var s = String(str || "");
-    var fw = root.textUtilsStd && root.textUtilsStd.fw ? root.textUtilsStd.fw : null;
-    var splitLines = root.textUtilsStd && root.textUtilsStd.splitLines ? root.textUtilsStd.splitLines : null;
-    var joinLines = root.textUtilsStd && root.textUtilsStd.joinLines ? root.textUtilsStd.joinLines : null;
+    var fw = root.textPrimitives && root.textPrimitives.fw ? root.textPrimitives.fw : null;
+    var splitLines = root.textPrimitives && root.textPrimitives.splitLines ? root.textPrimitives.splitLines : null;
+    var joinLines = root.textPrimitives && root.textPrimitives.joinLines ? root.textPrimitives.joinLines : null;
 
     if (!fw || !splitLines || !joinLines) {
-      // textUtilsStd が無い場合は安全側でそのまま返す
+      // textPrimitives が無い場合は安全側でそのまま返す
       return s;
     }
 
@@ -532,9 +532,9 @@
     // 令和YY年MM月DD日
     s = s.replace(/令和([0-9０-９\s\u3000]+)年([0-9０-９\s\u3000]+)月([0-9０-９\s\u3000]+)日/g,
       function (_all, y, m, d) {
-        y = padLeftZero(removeWS(y).trim(), 2);
-        m = padLeftZero(removeWS(m).trim(), 2);
-        d = padLeftZero(removeWS(d).trim(), 2);
+        y = padWithFullWidthSpace(removeWS(y).trim(), 2);
+        m = padWithFullWidthSpace(removeWS(m).trim(), 2);
+        d = padWithFullWidthSpace(removeWS(d).trim(), 2);
         return "令和" + fwNum(y) + "年" + fwNum(m) + "月" + fwNum(d) + "日";
       }
     );
@@ -542,9 +542,9 @@
     // 平成YY年MM月DD日
     s = s.replace(/平成([0-9０-９\s\u3000]+)年([0-9０-９\s\u3000]+)月([0-9０-９\s\u3000]+)日/g,
       function (_all, y, m, d) {
-        y = padLeftZero(removeWS(y).trim(), 2);
-        m = padLeftZero(removeWS(m).trim(), 2);
-        d = padLeftZero(removeWS(d).trim(), 2);
+        y = padWithFullWidthSpace(removeWS(y).trim(), 2);
+        m = padWithFullWidthSpace(removeWS(m).trim(), 2);
+        d = padWithFullWidthSpace(removeWS(d).trim(), 2);
         return "平成" + fwNum(y) + "年" + fwNum(m) + "月" + fwNum(d) + "日";
       }
     );
@@ -704,7 +704,7 @@
   // 公開
   // ======================================================================
 
-  root.textUtilsMain = {
+  root.formatBody = {
     // 空白系
     padHead: padHead,
     trimHead: trimHead,

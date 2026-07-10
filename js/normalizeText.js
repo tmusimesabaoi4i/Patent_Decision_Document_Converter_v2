@@ -1,15 +1,18 @@
 /**
- * textUtilsInit.js
+ * normalizeText.js
  * ---------------------------------------------------------------------------
- * 特許文書の前処理（"init" フィルタチェーン）で使う整形関数をまとめたモジュール。
+ * 特許文書の前処理（"normalize" フィルタチェーン）で使う整形関数をまとめたモジュール。
  *
  * ▼ 目的
  *   - 改行正規化・半角化・空行整理など、入力テキストの初期正規化に使う
  *     関数群を提供する。
  *
  * ▼ 公開するグローバル
- *   - root.textUtilsInit
+ *   - root.normalizeText
  *       nl, hw, clean, rmBlank, squeeze, trim, gap, lead
+ *
+ * ▼ 依存
+ *   - root.textPrimitives（nl / hw を委譲）
  * ---------------------------------------------------------------------------
  */
 
@@ -20,15 +23,15 @@
   // 個別ユーティリティ関数
   // ========================================================================
 
-  // 改行正規化 nl と半角化 hw は textUtilsStd と実装が同一だったため委譲する。
-  const textUtilsStd = root.textUtilsStd;
-  if (!textUtilsStd) {
+  // 改行正規化 nl と半角化 hw は textPrimitives と実装が同一だったため委譲する。
+  const textPrimitives = root.textPrimitives;
+  if (!textPrimitives) {
     // eslint-disable-next-line no-console
-    console.warn("textUtilsInit.js: root.textUtilsStd が見つかりません。textUtilsStd.js を先に読み込んでください。");
+    console.warn("normalizeText.js: root.textPrimitives が見つかりません。textPrimitives.js を先に読み込んでください。");
     return;
   }
-  const nl = textUtilsStd.nl;
-  const hw = textUtilsStd.hw;
+  const nl = textPrimitives.nl;
+  const hw = textPrimitives.hw;
 
   /**
    * 特殊文字・制御文字を除去する
@@ -205,7 +208,7 @@
    * - root は globalThis（≒ window）であり、TextUtils を直にぶら下げる。
    * - 他のスクリプトからは TextUtils.nl(...) などとして利用できる。
    */
-  root.textUtilsInit = {
+  root.normalizeText = {
     nl: nl,
     hw: hw,
     clean: clean,

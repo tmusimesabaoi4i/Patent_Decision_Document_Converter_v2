@@ -30,7 +30,7 @@
    *
    * 置換辞書は telecomAbbreviations.js（純データ）に分離した。
    * 正規化・Trie 構築・最長一致のエンジンはモジュール読み込み時に一度だけ実行し、
-   * applyFlexibleMap() は事前構築済みの Trie を使う短いドライバとする。
+   * replaceAbbreviations() は事前構築済みの Trie を使う短いドライバとする。
    */
 
   // 正規化関数：空白 / ハイフン / アンダースコア除去＋小文字化
@@ -73,7 +73,7 @@
 
       if (Object.prototype.hasOwnProperty.call(entryMap, nk)) {
         throw new Error(
-          "[applyFlexibleMap] normalized key collision: '" +
+          "[replaceAbbreviations] normalized key collision: '" +
             rawKey +
             "' (" +
             nk +
@@ -226,7 +226,7 @@
    * @param {string} str - 入力文字列
    * @returns {string} - 置換後の文字列
    */
-  function applyFlexibleMap(str) {
+  function replaceAbbreviations(str) {
     // 文字列全体から「英数字で始まる、英数字/空白/_/- の連続塊」を抽出して処理
     // 空白を含む句（例: "rrc setup request"）にも対応
     return String(str).replace(/[A-Za-z0-9][A-Za-z0-9\s_-]*/g, function (chunk) {
@@ -238,6 +238,6 @@
   // グローバルへのエクスポート
   // ----------------------------------------
   root.replaceAbbreviations = {
-    applyFlexibleMap: applyFlexibleMap,
+    replaceAbbreviations: replaceAbbreviations,
   };
 })(globalThis);

@@ -5,22 +5,22 @@
 // 最後に残った < / > を全角化する汎用整形モジュール。
 //
 // 公開グローバル: root.formatBoilerplate
-// 依存: root.textUtilsStd（splitLines / joinLines）
+// 依存: root.textPrimitives（splitLines / joinLines）
 
 (function (root) {
   "use strict";
 
   // ============================================================
-  // 依存（textUtilsStd）
+  // 依存（textPrimitives）
   // ============================================================
-  var textUtilsStd = root.textUtilsStd;
-  if (!textUtilsStd) {
+  var textPrimitives = root.textPrimitives;
+  if (!textPrimitives) {
     // eslint-disable-next-line no-console
-    console.warn("formatBoilerplate.js: root.textUtilsStd が見つかりません。textUtilsStd.js を先に読み込んでください。");
+    console.warn("formatBoilerplate.js: root.textPrimitives が見つかりません。textPrimitives.js を先に読み込んでください。");
     return;
   }
-  var splitLines = textUtilsStd.splitLines;
-  var joinLines = textUtilsStd.joinLines;
+  var splitLines = textPrimitives.splitLines;
+  var joinLines = textPrimitives.joinLines;
 
   /**
    * 「取得先 <http:...>」で囲まれたURL部分だけをすべて小文字化して返す
@@ -30,7 +30,7 @@
    * @param {string} str
    * @returns {string}
    */
-  function lcKenshuSakiUrl(str) {
+  function lowercaseSourceUrl(str) {
     if (typeof str !== "string" || str.length === 0) return str;
 
     // 「取得先 <」 + URL(http/https) + 「>」 を検出
@@ -52,8 +52,8 @@
    * - 該当行は所定のレイアウトに置換。
    * - 最後に < / > を全角に変換する。
    */
-  function convertForOther(text) {
-    var lines = splitLines(lcKenshuSakiUrl(text));
+  function formatBoilerplateLines(text) {
+    var lines = splitLines(lowercaseSourceUrl(text));
     var outLines = lines.map(function (line) {
       var raw = String(line);
       // 行頭の空白を除いた版
@@ -101,6 +101,6 @@
   // グローバルへのエクスポート
   // ----------------------------------------
   root.formatBoilerplate = {
-    convertForOther: convertForOther,
+    formatBoilerplateLines: formatBoilerplateLines,
   };
 })(globalThis);
