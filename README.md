@@ -19,6 +19,7 @@
 | アプリ本体・モード登録 | `js/app.js` 先頭コメント |
 | モード別パイプライン定義 | `js/modeFunctionLists.js` 先頭コメント |
 | フィルタ登録と `runTextChains` | `js/textFilterRegistry.js` 先頭コメント |
+| ボタン別 関数フロー（UI 操作ごとの通過関数） | [js/flow.md](js/flow.md) |
 
 ## プロジェクト構成（概要）
 
