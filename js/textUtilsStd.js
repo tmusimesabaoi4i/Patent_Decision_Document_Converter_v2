@@ -11,7 +11,8 @@
  *   - root.textUtilsStd
  *       nl, joinLines, splitLines,
  *       fwNum, hwNum, fwSym, hwSym, fwAlpha, hwAlpha,
- *       fwAlnum, hwAlnum, fw, hw
+ *       fwAlnum, hwAlnum, fw, hw,
+ *       isBlankLine, escapeRegExp
  *
  * ▼ 依存
  *   - なし（他モジュールに依存しない基盤モジュール）
@@ -456,6 +457,32 @@
         return String(str).split(/\r\n|\r|\n/);
     }
 
+    /**
+     * 行が「空行」かどうかを判定する。
+     *
+     * - 空文字、または半角空白・タブ・復帰・改ページ・垂直タブ・全角スペースのみで
+     *   構成される行を「空行」とみなす。
+     *
+     * @param {string} line 判定対象の 1 行分の文字列
+     * @returns {boolean} 空行であれば true、それ以外は false
+     */
+    function isBlankLine(line) {
+        return /^[ \t\r\f\v　]*$/.test(line);
+    }
+
+    /**
+     * 正規表現のメタ文字をエスケープする。
+     *
+     * - 文字列中の正規表現特殊文字（. * + ? ^ $ { } ( ) | [ ] \\）を
+     *   バックスラッシュでエスケープし、リテラルとして扱えるようにする。
+     *
+     * @param {string} text 入力文字列
+     * @returns {string} エスケープ済み文字列
+     */
+    function escapeRegExp(text) {
+        return String(text).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    }
+
   root.textUtilsStd = {
     nl: nl,                     // 改行コードを統一する
     joinLines: joinLines,       // 配列化を \n で結合して文字列に戻す
@@ -470,5 +497,7 @@
     hwAlnum: hwAlnum,           // strのすべての英数字のみを半角にする関数
     fw: fw,                     // strのすべての全ての文字を全角にする関数
     hw: hw,                     // strのすべての全ての文字を半角にする関数
+    isBlankLine: isBlankLine,   // 行が空行（空白類のみ）かどうかを判定する関数
+    escapeRegExp: escapeRegExp, // 正規表現のメタ文字をエスケープする関数
   };
 })(globalThis);

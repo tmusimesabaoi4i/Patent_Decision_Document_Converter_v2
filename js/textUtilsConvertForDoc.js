@@ -14,60 +14,24 @@
    *  - 全角英数字の半角化
    *  - 行ごとのパターン判定＆整形（インデント調整・ラベル整形など）
    *  - 先行技術文献調査の記録部分だけを抜き出して整形するラッパ処理
-   */
-
-  /**
-   * 全角英数字（０-９, Ａ-Ｚ, ａ-ｚ）を半角に変換するヘルパ
-   * @param {string} c - 1文字
-   * @returns {string} 半角に変換された文字（または元の文字）
-   */
-  function toHalfAlnumChar(c) {
-    var code = c.charCodeAt(0);
-    // 全角数字（０-９）
-    if (code >= 0xff10 && code <= 0xff19) {
-      return String.fromCharCode(code - 0xff10 + 0x30);
-    }
-    // 全角大文字（Ａ-Ｚ）
-    if (code >= 0xff21 && code <= 0xff3a) {
-      return String.fromCharCode(code - 0xff21 + 0x41);
-    }
-    // 全角小文字（ａ-ｚ）
-    if (code >= 0xff41 && code <= 0xff5a) {
-      return String.fromCharCode(code - 0xff41 + 0x61);
-    }
-    return c;
-  }
-
-  /**
-   * 文字列を改行単位で分割する。
-   * Windows / macOS / Unix など、代表的な改行パターンに対応する。
    *
-   * @param {string} str - 入力文字列
-   * @returns {string[]} 行ごとの配列
+   * ▼ 依存
+   *  - root.textUtilsStd（splitLines / joinLines / hwAlnum）
    */
-  function splitLines(str) {
-    return String(str).split(/\r\n|\r|\n/);
-  }
 
-  /**
-   * 行配列を単純に "\n" で結合して 1 つの文字列に戻す。
-   * 元の改行コードは保持しない（LF 固定）。
-   *
-   * @param {string[]} lines - 行配列
-   * @returns {string} 結合した文字列
-   */
-  function joinLines(lines) {
-    return lines.join("\n");
+  // ============================================================
+  // 依存（textUtilsStd）
+  // ============================================================
+  var textUtilsStd = root.textUtilsStd;
+  if (!textUtilsStd) {
+    // eslint-disable-next-line no-console
+    console.warn("textUtilsConvertForDoc.js: root.textUtilsStd が見つかりません。textUtilsStd.js を先に読み込んでください。");
+    return;
   }
-
-  /**
-   * 全角英数字を半角に変換する。
-   * @param {string} text
-   * @returns {string}
-   */
-  function toHalfAlnumStr(text) {
-    return String(text).replace(/[０-９Ａ-Ｚａ-ｚ]/g, toHalfAlnumChar);
-  }
+  // 行分割・行結合・全角英数字の半角化などの共通プリミティブは textUtilsStd に集約した。
+  var splitLines = textUtilsStd.splitLines;
+  var joinLines = textUtilsStd.joinLines;
+  var hwAlnum = textUtilsStd.hwAlnum;
 
   /**
    * 単一行をルールベースで整形する。
@@ -98,7 +62,7 @@
     }
 
     // 全角英数字を半角に正規化
-    s = toHalfAlnumStr(s);
+    s = hwAlnum(s);
 
     // n/m - x/y をまとめて拾う（/ と - の前後に空白があってもマッチさせる）
     var pattern = /\s*(\d+)\s*(\/)\s*(\d+)(\s*-\s*)(\d+)\s*(\/)\s*(\d+)/g;
@@ -254,7 +218,7 @@
     }
 
     // 全角英数字を半角に正規化
-    s = toHalfAlnumStr(s);
+    s = hwAlnum(s);
 
     // デバッグしたいときだけコメントアウトを外す
     // console.log("[convertEachLine]", s);

@@ -12,7 +12,7 @@
  *       stripBlankLinesInAddedNewMatter
  *
  * ▼ 依存
- *   - なし（内部に splitLines / joinLines を持つ）
+ *   - root.textUtilsStd（splitLines / joinLines / isBlankLine / escapeRegExp）
  * ---------------------------------------------------------------------------
  */
 
@@ -20,49 +20,26 @@
   "use strict";
 
   // ========================================================================
+  // 依存（textUtilsStd）
+  // ========================================================================
+
+  var textUtilsStd = root.textUtilsStd;
+  if (!textUtilsStd) {
+    // eslint-disable-next-line no-console
+    console.warn("stripBlankLines.js: root.textUtilsStd が見つかりません。textUtilsStd.js を先に読み込んでください。");
+    return;
+  }
+  var splitLines = textUtilsStd.splitLines;
+  var joinLines = textUtilsStd.joinLines;
+  var isBlankLine = textUtilsStd.isBlankLine;
+  var escapeRegExp = textUtilsStd.escapeRegExp;
+
+  // ========================================================================
   // 内部共通ユーティリティ
   // ========================================================================
 
-  /**
-   * 文字列を行単位に分割します。
-   *
-   * - 入力の改行コード（\r\n, \r, \n）はすべて \n に正規化したうえで分割します。
-   * - null / undefined / 空文字列の場合は、長さ 1 の配列 [""] を返します。
-   *
-   * @param {string} str 行分割したい文字列
-   * @returns {string[]} 行ごとの文字列配列
-   */
-  function splitLines(str) {
-    if (str == null || str === "") return [""];
-    return String(str).split(/\r\n|\r|\n/);
-  }
-
-  /**
-   * 行配列を 1 つの文字列に結合します。
-   *
-   * - 各行の間は \n で結合します。
-   * - 末尾に余分な改行文字は追加しません（つまり `lines.join("\\n")` と同じ挙動です）。
-   *
-   * @param {string[]} lines 行の配列
-   * @returns {string} 結合後の文字列
-   */
-  function joinLines(lines) {
-    return lines.join("\n");
-  }
-
-  /**
-   * 行が「空行」であるかどうかを判定します。
-   *
-   * - 半角スペース、タブ、復帰、改ページ、垂直タブ、および全角スペースのみで構成される行を
-   *   空行とみなします。
-   * - 何も文字が含まれない完全な空文字列も空行として判定されます。
-   *
-   * @param {string} line 判定対象の 1 行分の文字列
-   * @returns {boolean} 空行であれば true、それ以外は false
-   */
-  function isBlankLine(line) {
-    return /^[ \t\r\f\v\u3000]*$/.test(line);
-  }
+  // 行分割・空行判定などの共通プリミティブは textUtilsStd に集約した。
+  //（splitLines の空入力の扱いも、全呼び出し箇所（inner は必ず文字列）で等価）
 
   // ========================================================================
   // 8. 主張部分（特定範囲内の空白行削除）
@@ -88,7 +65,6 @@
     const s = String(str);
     const starts = Array.isArray(startMarker) ? startMarker : [startMarker];
     const ends = Array.isArray(endMarker) ? endMarker : [endMarker];
-    const escapeRegExp = (text) => String(text).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
     let result = s;
     for (const start of starts) {
@@ -109,7 +85,6 @@
     const s = String(str);
     const starts = Array.isArray(startMarker) ? startMarker : [startMarker];
     const ends = Array.isArray(endMarker) ? endMarker : [endMarker];
-    const escapeRegExp = (text) => String(text).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
     let result = s;
     for (const start of starts) {
@@ -130,7 +105,6 @@
     const s = String(str);
     const starts = Array.isArray(startMarker) ? startMarker : [startMarker];
     const ends = Array.isArray(endMarker) ? endMarker : [endMarker];
-    const escapeRegExp = (text) => String(text).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
     let result = s;
     for (const start of starts) {

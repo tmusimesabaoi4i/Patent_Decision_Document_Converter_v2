@@ -4,121 +4,19 @@
   "use strict";
 
   // ============================================================
-  // 数値・英数字の全角／半角変換ヘルパ
+  // 依存（textUtilsStd）
   // ============================================================
-
-  /**
-   * 半角数字 0-9 → 全角数字 ０-９ に変換するヘルパ。
-   * すでに全角数字の場合はそのまま返す。
-   */
-  function toFullDigitChar(ch) {
-    var code = ch.charCodeAt(0);
-
-    // 半角 '0'〜'9'
-    if (code >= 0x30 && code <= 0x39) {
-      return String.fromCharCode(code + 0xFEE0);
-    }
-
-    // すでに全角 '０'〜'９' はそのまま
-    if (code >= 0xFF10 && code <= 0xFF19) {
-      return ch;
-    }
-
-    return ch;
+  var textUtilsStd = root.textUtilsStd;
+  if (!textUtilsStd) {
+    // eslint-disable-next-line no-console
+    console.warn("textUtilsConvertForCau.js: root.textUtilsStd が見つかりません。textUtilsStd.js を先に読み込んでください。");
+    return;
   }
-
-  /**
-   * 文字列中の数字だけを全角数字に変換する。
-   */
-  function toFullDigits(str) {
-    return String(str).replace(/[0-9０-９]/g, function (ch) {
-      return toFullDigitChar(ch);
-    });
-  }
-
-  /**
-   * 全角英数字（０-９, Ａ-Ｚ, ａ-ｚ）を半角英数字に変換するヘルパ
-   * @param {string} c - 1文字
-   * @returns {string} 半角に変換された文字（または元の文字）
-   */
-  function toHalfAlnumChar(c) {
-    var code = c.charCodeAt(0);
-    // 全角数字（０-９）
-    if (code >= 0xff10 && code <= 0xff19) {
-      return String.fromCharCode(code - 0xff10 + 0x30);
-    }
-    // 全角大文字（Ａ-Ｚ）
-    if (code >= 0xff21 && code <= 0xff3a) {
-      return String.fromCharCode(code - 0xff21 + 0x41);
-    }
-    // 全角小文字（ａ-ｚ）
-    if (code >= 0xff41 && code <= 0xff5a) {
-      return String.fromCharCode(code - 0xff41 + 0x61);
-    }
-    return c;
-  }
-
-  /**
-   * 半角英数字 (0-9, A-Z, a-z) を全角英数字に変換するヘルパ
-   * @param {string} c - 1文字
-   * @returns {string} 全角に変換された文字（または元の文字）
-   */
-  function toFullAlnumChar(c) {
-    var code = c.charCodeAt(0);
-    // 半角数字（0-9）
-    if (code >= 0x30 && code <= 0x39) {
-      return String.fromCharCode(code - 0x30 + 0xff10);
-    }
-    // 半角大文字（A-Z）
-    if (code >= 0x41 && code <= 0x5a) {
-      return String.fromCharCode(code - 0x41 + 0xff21);
-    }
-    // 半角小文字（a-z）
-    if (code >= 0x61 && code <= 0x7a) {
-      return String.fromCharCode(code - 0x61 + 0xff41);
-    }
-    return c;
-  }
-
-  /**
-   * 文字列を改行単位で分割する。
-   * Windows / macOS / Unix などの代表的な改行コードに対応。
-   *
-   * @param {string} str - 入力文字列
-   * @returns {string[]} 行ごとの配列
-   */
-  function splitLines(str) {
-    return String(str).split(/\r\n|\r|\n/);
-  }
-
-  /**
-   * 行配列を単純に "\n" で結合して 1 つの文字列に戻す。
-   * 元の改行コードは保持しない（LF 固定）。
-   *
-   * @param {string[]} lines - 行配列
-   * @returns {string} 結合した文字列
-   */
-  function joinLines(lines) {
-    return lines.join("\n");
-  }
-
-  /**
-   * 文字列中の「全角英数字」を半角英数字に変換する。
-   * @param {string} text
-   * @returns {string}
-   */
-  function toHalfAlnumStr(text) {
-    return String(text).replace(/[０-９Ａ-Ｚａ-ｚ]/g, toHalfAlnumChar);
-  }
-
-  /**
-   * 文字列中の「半角数字（0-9）」のみを全角数字に変換する。
-   * @param {string} text
-   * @returns {string}
-   */
-  function toFullNumStr(text) {
-    return String(text).replace(/[0-9]/g, toFullAlnumChar);
-  }
+  // 行分割・行結合・全角半角変換などの共通プリミティブは textUtilsStd に集約した。
+  var splitLines = textUtilsStd.splitLines;
+  var joinLines = textUtilsStd.joinLines;
+  var hwAlnum = textUtilsStd.hwAlnum;
+  var fwNum = textUtilsStd.fwNum;
 
   // ============================================================
   // ＜補正の示唆＞ ブロック用
@@ -159,10 +57,10 @@
     var rest = m[5] || "";
 
     // 数字は全角に統一
-    var fullDigits = toFullDigits(digits);
+    var fullDigits = fwNum(digits);
 
     // 後半部はまず全角英数字を半角に
-    var normalizedRest = toHalfAlnumStr(rest);
+    var normalizedRest = hwAlnum(rest);
 
     // 行頭およびカンマの直後の英字を大文字化
     normalizedRest = normalizedRest.replace(
@@ -232,10 +130,10 @@
     var rest = m[4] || "";
 
     // 数字は全角に揃える
-    var fullNums = toFullDigits(nums);
+    var fullNums = fwNum(nums);
 
     // 本文部は英数字のみ半角に
-    var normalizedRest = toHalfAlnumStr(rest);
+    var normalizedRest = hwAlnum(rest);
 
     return indent + fullNums + dot + normalizedRest;
   }
@@ -261,7 +159,7 @@
     var body = s.replace(/^[ 　\t]+/, "");
 
     // 英数字のみ半角化
-    var normalizedBody = toHalfAlnumStr(body);
+    var normalizedBody = hwAlnum(body);
 
     // ファミリー文献情報の本文行の標準インデント（全角スペース4つ）
     var INDENT = "　　　";
@@ -314,14 +212,14 @@
     // ------------------------------
     // 上記以外の行は、まず全角英数字を半角に正規化
     // ------------------------------
-    var s = toHalfAlnumStr(raw);
+    var s = hwAlnum(raw);
 
     // （ここに DB 名や IPC 行など追加ルールがあれば挿入）
 
     // ------------------------------
     // デフォルト：数字だけ全角に戻す
     // ------------------------------
-    return toFullNumStr(s);
+    return fwNum(s);
   }
 
   // ============================================================

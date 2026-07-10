@@ -17,7 +17,7 @@
    *       fwNumLaw, fwRefLaw, alphaCase, tightClaims
    *
    * ▼ 依存
-   *   - root.textUtilsStd（joinLines / splitLines / fwNum / fwAlnum / fw ほか）
+   *   - root.textUtilsStd（joinLines / splitLines / fwNum / fwAlnum / fw / escapeRegExp ほか）
    * ------------------------------------------------------------------------
    */
 
@@ -36,6 +36,7 @@
   var splitLines = textUtilsStd.splitLines;
   var fwNum = textUtilsStd.fwNum;     // 数字のみ全角化
   var fwAlnum = textUtilsStd.fwAlnum; // 英数字を全角化
+  var escapeRegExp = textUtilsStd.escapeRegExp; // 正規表現メタ文字のエスケープ
 
   // ======================================================================
   // 内部ユーティリティ
@@ -46,6 +47,7 @@
    * @param {string} line
    * @returns {boolean}
    */
+  // intentionally local: textUtilsStd.isBlankLine とは挙動が異なる（\n も空白類に含み、String() 変換を伴う）
   function isBlankLine(line) {
     return /^[ \t\r\n\f\v\u3000]*$/.test(String(line || ""));
   }
@@ -90,6 +92,7 @@
    * @param {string} s
    * @returns {string}
    */
+  // intentionally local: textUtilsStd.escapeRegExp とは挙動が異なる（- と / も追加でエスケープする）
   function escapeForRegExp(s) {
     return String(s || "").replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
   }
@@ -699,7 +702,7 @@
 
     // STAR_WORD を正規表現化（長い語を優先して誤マッチを減らす）
     var starSrc = starList
-      .map(function (s) { return escRe(String(s)); })
+      .map(function (s) { return escapeRegExp(String(s)); })
       .sort(function (a, b) { return b.length - a.length; })
       .join("|");
 
@@ -713,11 +716,6 @@
       var kwd2 = fn(kwd, star, _all);
       return star + between + kwd2;
     });
-
-    // 正規表現用のエスケープ
-    function escRe(s) {
-      return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    }
   }
 
   /**
@@ -841,15 +839,11 @@
     var starts = Array.isArray(startMarker) ? startMarker : [startMarker];
     var ends = Array.isArray(endMarker) ? endMarker : [endMarker];
 
-    function esc(x) {
-      return String(x).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    }
-
     var result = s;
 
     for (var i = 0; i < starts.length; i++) {
       for (var j = 0; j < ends.length; j++) {
-        var pattern = new RegExp("(" + esc(starts[i]) + ")([\\s\\S]*?)(" + esc(ends[j]) + ")", "g");
+        var pattern = new RegExp("(" + escapeRegExp(starts[i]) + ")([\\s\\S]*?)(" + escapeRegExp(ends[j]) + ")", "g");
         result = result.replace(pattern, function (_all, pre, inner, post) {
           var innerLines = splitLines(inner);
           var outLines = [];
