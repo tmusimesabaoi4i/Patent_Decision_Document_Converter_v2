@@ -80,7 +80,7 @@ app.js                     → 自動起動
 | Amendment Refused | `amendmentRefused` | `init` → `main` → `stripBlankLines` → `convertEnd` |
 | Pre-examination Report | `preExaminationReport` | `init` → `main` → `stripBlankLines` → `convertEnd` |
 | PCT | `pct` | `init` → `main` |
-| PCT (English) | `pct_eng` | `init` → `main_PCTENG` |
+| PCT (English) | `pct_eng` | `init` → `main` |
 | Paragraphs | `paragraph` | `parExtract` |
 | to HTML | `html` | `tohtml` |
 
@@ -98,7 +98,6 @@ app.js                     → 自動起動
 |---|---|---|
 | `init` | 改行統一・半角化・制御文字除去・空行削除・行間正規化 | `textUtilsInit` |
 | `main` | 略語辞書適用・見出し整形・全角化・クレーム詰めなど | `textUtilsMain`, `textUtilsConvertForCau` |
-| `main_PCTENG` | 英語 PCT 向け（`alphaCase` なし） | `textUtilsMain`, `textUtilsConvertForCau` |
 | `stripBlankLines` | セクション別の空行削除 | `stripBlankLines` |
 | `convertEnd` | 文書末尾の書式変換 | `textUtilsConvertForDoc`, `textUtilsConvertForCau` |
 | `finalAction` | 最終拒絶向け末尾処理 | `textUtilsConvertForCau` |

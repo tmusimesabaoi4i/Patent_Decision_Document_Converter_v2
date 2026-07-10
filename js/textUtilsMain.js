@@ -14,7 +14,7 @@
    * ▼ 公開するグローバル
    *   - root.textUtilsMain
    *       padHead, trimHead, tightBelowBullet, fwHead,
-   *       fwNumLaw, fwRefLaw, alphaCase, tightClaims
+   *       fwNumLaw, fwRefLaw, tightClaims
    *
    * ▼ 依存
    *   - root.textUtilsStd（joinLines / splitLines / fwNum / fwAlnum / fw / escapeRegExp ほか）
@@ -97,98 +97,6 @@
     return String(s || "").replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
   }
 
-  /**
-   * RegExp.flags が無い環境向け：フラグ文字列を復元
-   * @param {RegExp} re
-   * @returns {string}
-   */
-  function getRegExpFlags(re) {
-    if (re.flags != null) return re.flags;
-    var f = "";
-    if (re.global) f += "g";
-    if (re.ignoreCase) f += "i";
-    if (re.multiline) f += "m";
-    if (re.unicode) f += "u";
-    if (re.sticky) f += "y";
-    if (re.dotAll) f += "s";
-    return f;
-  }
-
-  /**
-   * 「必ず global で置換したい」用途のため、g フラグを強制付与して複製
-   * @param {RegExp} re
-   * @returns {RegExp}
-   */
-  function ensureGlobal(re) {
-    var flags = getRegExpFlags(re);
-    if (flags.indexOf("g") === -1) flags += "g";
-    return new RegExp(re.source, flags);
-  }
-
-  // ======================================================================
-  // 過剰変換防止：技術用語トークン保護
-  // ======================================================================
-
-  /**
-   * 変換から除外したい “技術用語トークン” の既定セット
-   * - 追加したい場合は root.textUtilsMainConfig.keepTechReList で拡張できる。
-   * @type {RegExp[]}
-   */
-  var DEFAULT_KEEP_TECH_RE_LIST = [
-    /IEEE\s*802\.\d+(?:\.\d+)*(?:[a-z])?/gi,
-    /\b802\.\d+(?:\.\d+)*(?:[a-z])?\b/gi,
-    /\bWPA(?:\d+)?-PSK\b/gi,
-    /\b[A-Z]{2,}(?:[0-9]{0,3})?(?:[-\/][A-Z0-9]{2,})+\b/g,
-    /\bWi-?Fi\b/gi
-  ];
-
-  /**
-   * 正規表現リストに一致する箇所を番兵に置換して保護
-   * @param {string} text
-   * @param {RegExp[]} reList
-   * @returns {{ text: string, map: string[] }}
-   */
-  function protectByRegexList(text, reList) {
-    var out = String(text || "");
-    var map = [];
-
-    for (var i = 0; i < reList.length; i++) {
-      var re = ensureGlobal(reList[i]);
-      out = out.replace(re, function (m) {
-        var idx = map.length;
-        map.push(m);
-        // Private Use Area を番兵として使用（通常入力に現れにくい）
-        return "\uE000" + idx + "\uE001";
-      });
-    }
-    return { text: out, map: map };
-  }
-
-  /**
-   * 番兵を元に戻す
-   * @param {string} text
-   * @param {string[]} map
-   * @returns {string}
-   */
-  function restoreProtected(text, map) {
-    return String(text || "").replace(/\uE000(\d+)\uE001/g, function (_m, n) {
-      var idx = Number(n);
-      return map && map[idx] != null ? map[idx] : _m;
-    });
-  }
-
-  /**
-   * 技術トークン保護付きで変換関数を適用
-   * @param {string} text
-   * @param {(s:string)=>string} fn
-   * @param {RegExp[]} keepList
-   * @returns {string}
-   */
-  function applyWithTechProtection(text, fn, keepList) {
-    var p = protectByRegexList(text, keepList);
-    var changed = fn(p.text);
-    return restoreProtected(changed, p.map);
-  }
 
   // ======================================================================
   // 設定（拡張ポイント）
@@ -199,8 +107,7 @@
    * 例）
    *   root.textUtilsMainConfig = {
    *     dotMarks: ["・","●",...],
-   *     heading: { maxDigits: 2, maxDepth: 3, alphaMax: 2 },
-   *     keepTechReList: [ /.../g, ... ]
+   *     heading: { maxDigits: 2, maxDepth: 3, alphaMax: 2 }
    *   };
    */
   var CFG = root.textUtilsMainConfig || {};
@@ -322,12 +229,6 @@
   // - / < の行頭判定
   var DASH_ANGLE_RE = new RegExp("^[ \\u3000]*([" + DASH_AND_ANGLE_MARKS.map(escapeForRegExp).join("") + "])");
 
-  // 技術トークン保護リスト（設定で追加可能）
-  var KEEP_TECH_RE_LIST = (function () {
-    var extra = Array.isArray(CFG.keepTechReList) ? CFG.keepTechReList : [];
-    return DEFAULT_KEEP_TECH_RE_LIST.concat(extra);
-  })();
-
   // ======================================================================
   // 1. 空白挿入（先頭）
   // ======================================================================
@@ -414,7 +315,7 @@
   }
 
   // ======================================================================
-  // 10. 箇条書き直下の空行削除
+  // 3. 箇条書き直下の空行削除
   // ======================================================================
 
   /**
@@ -454,7 +355,7 @@
   }
 
   // ======================================================================
-  // 3. 全角化（条件付き）
+  // 4. 全角化（条件付き）
   // ======================================================================
 
   /**
@@ -800,29 +701,7 @@
   }
 
   // ======================================================================
-  // 4. 英字大小（技術トークン保護あり）
-  // ======================================================================
-
-  /**
-   * 英単語の先頭1文字のみ大文字化（ただし技術トークンは保護）
-   * @param {string} str
-   * @returns {string}
-   */
-  function alphaCase(str) {
-    var s = String(str || "");
-
-    return applyWithTechProtection(s, function (t) {
-      return t.replace(/[a-zA-Z]+/g, function (word) {
-        // 既に先頭が大文字なら変更しない（過剰な大小変換を避ける）
-        var c0 = word.charAt(0);
-        if (c0 >= "A" && c0 <= "Z") return word;
-        return c0.toUpperCase() + word.slice(1);
-      });
-    }, KEEP_TECH_RE_LIST);
-  }
-
-  // ======================================================================
-  // 8. 『』内の空白行削除
+  // 7. 『』内の空白行削除
   // ======================================================================
 
   /**
@@ -884,9 +763,6 @@
     fwHead: fwHead,
     fwNumLaw: fwNumLaw,
     fwRefLaw: fwRefLaw,
-
-    // 大小変換（技術トークン保護あり）
-    alphaCase: alphaCase,
 
     // 行構造
     tightClaims: tightClaims

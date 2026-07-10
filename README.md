@@ -32,7 +32,7 @@ css/
 js/
   textUtilsStd.js            … 共通プリミティブ（改行・空白判定・全角半角変換など）
   textUtilsInit.js           … 前処理（init チェーン）
-  textUtilsMain.js           … 本文整形（main / main_PCTENG チェーン）
+  textUtilsMain.js           … 本文整形（main チェーン）
   stripBlankLines.js         … セクション別空行削除
   textUtilsConvertForDoc.js  … 文書末尾の書式変換
   telecomAbbreviations.js    … 通信・3GPP 系略語辞書（純データ）

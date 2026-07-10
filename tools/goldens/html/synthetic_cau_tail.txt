@@ -1,6 +1,6 @@
 <div class="patent-text">
 <p class="patent-paragraph no-num">この拒絶理由通知の内容に関するお問合せ又は面接のご希望がありましたら、次の連絡先までご連絡ください。補正案等の送付を希望される際は、その旨を事前にご連絡ください。</p>
-<p class="patent-paragraph no-num">審査第四部伝送システム(PA5J) 飯星 陽平(いいほし ようへい)TEL.03-3581-1101 内線3534※●●●●@Jpo.Go.Jp (上記「●●●●」に置き換えて、「PA5J」と入力ください。)</p>
+<p class="patent-paragraph no-num">審査第四部伝送システム(PA5J) 飯星 陽平(いいほし ようへい)TEL.03-3581-1101 内線3534※●●●●@jpo.go.jp (上記「●●●●」に置き換えて、「PA5J」と入力ください。)</p>
 <p class="patent-paragraph no-num">&lt;補正をする際の注意&gt;</p>
 <p class="patent-paragraph no-num">&lt;補正の示唆&gt;(1)fewofwKAoefwpを補正する。(2)geijgjiOas,fを削除する。(3)あああAを追加する。</p>
 <p class="patent-paragraph no-num">&lt;ファミリー文献情報&gt;1.US2020/0123456A1 Fgkrこけおr claims 1-5継続情報あり2.EP3123456B1ファミリー文献2の本文行です。ABC123</p>

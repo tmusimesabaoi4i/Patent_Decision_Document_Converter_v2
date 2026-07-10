@@ -64,14 +64,14 @@ flowchart TD
 | `amendmentRefused` | Amendment Refused | `init` → `main` → `stripBlankLines` → `convertEnd` |
 | `preExaminationReport` | Pre-examination Report | `init` → `main` → `stripBlankLines` → `convertEnd` |
 | `pct` | PCT | `init` → `main` |
-| `pct_eng` | PCT (English) | `init` → `main_PCTENG` |
+| `pct_eng` | PCT (English) | `init` → `main` |
 | `paragraph` | Paragraphs | `parExtract` |
 | `html` | to HTML | `tohtml` |
 
 補足:
 - `officeAction` / `amendmentRefused` / `preExaminationReport` の 3 モードは同一チェーン構成（`init → main → stripBlankLines → convertEnd`）です。
 - `finalOfficeAction` は 4 段目だけが異なり `convertEnd` の代わりに `finalAction`（`convertForOther` のみ）を実行します。
-- `pct` は末尾の空行削除・末尾整形を行わず `init → main` のみ。`pct_eng` は `main` から `alphaCase`（英字先頭大文字化）を外した `main_PCTENG` を使います。
+- `pct` は末尾の空行削除・末尾整形を行わず `init → main` のみ。`pct_eng` は `pct` と同じ構成（`init → main`）です。
 - `paragraph` / `html` は前処理（`init`）を通さず、専用の単一チェーンのみを実行します。
 
 ---
@@ -95,9 +95,9 @@ flowchart TD
 | 7 | `gap` | js/textUtilsInit.js | 各行の直後に空行を 1 行ずつ挿入し、行間を必ず 1 空行にする。 |
 | 8 | `lead` | js/textUtilsInit.js | 文字列先頭に改行を 1 つだけ付与する（既に先頭が改行なら何もしない）。 |
 
-### main チェーン（9 関数）— `js/textUtilsMain.js`
+### main チェーン（8 関数）— `js/textUtilsMain.js`
 
-本文の見出し・箇条書き・条文番号などの整形／全角化。定義: `register("main", [applyFlexibleMap, padHead, trimHead, tightBelowBullet, fwHead, fwNumLaw, fwRefLaw, alphaCase, tightClaims])`。
+本文の見出し・箇条書き・条文番号などの整形／全角化。定義: `register("main", [applyFlexibleMap, padHead, trimHead, tightBelowBullet, fwHead, fwNumLaw, fwRefLaw, tightClaims])`。
 
 | 順 | 関数 | 定義ファイル | 処理内容 |
 |---|---|---|---|
@@ -108,23 +108,7 @@ flowchart TD
 | 5 | `fwHead` | js/textUtilsMain.js | 行頭の見出しマークを全角化し、さらに `●`/`・` で始まる行を行全体全角化（内部で `fwLineStartsWithBlackDot` / `fwLineStartsWithSmallDot` を使用）。 |
 | 6 | `fwNumLaw` | js/textUtilsMain.js | 「第◯条第◯項第◯号」「令和/平成の日付」「請求項/段落/図」等の番号を全角化する（条文・参照番号系）。 |
 | 7 | `fwRefLaw` | js/textUtilsMain.js | 「表◯」などの参照番号列を数字開始のときだけ全角化（「特表」は除外し誤変換を防止）。 |
-| 8 | `alphaCase` | js/textUtilsMain.js | 英単語の先頭 1 文字を大文字化（既に大文字始まり、および技術トークンは保護して変換しない）。 |
-| 9 | `tightClaims` | js/textUtilsMain.js | `『』` で囲まれた範囲内の空白行を削除する。 |
-
-### main_PCTENG チェーン（8 関数）— `js/textUtilsMain.js`
-
-`main` から `alphaCase` を除いた PCT（英語原文）向け構成。定義: `register("main_PCTENG", [applyFlexibleMap, padHead, trimHead, tightBelowBullet, fwHead, fwNumLaw, fwRefLaw, tightClaims])`。
-
-| 順 | 関数 | 定義ファイル | 処理内容 |
-|---|---|---|---|
-| 1 | `applyFlexibleMap` | js/textUtilsConvertForCau.js | 通信系略語を辞書ベースの最長一致で正式表記へ置換（`main` と同じ）。 |
-| 2 | `padHead` | js/textUtilsMain.js | 各行の先頭に全角スペースを挿入。 |
-| 3 | `trimHead` | js/textUtilsMain.js | 箇条書き/見出し/`<`/`-` 行頭の空白を条件付き削除。 |
-| 4 | `tightBelowBullet` | js/textUtilsMain.js | 箇条書き行直下の空行を 1 行詰める。 |
-| 5 | `fwHead` | js/textUtilsMain.js | 見出しマーク・`●`/`・` 行の全角化。 |
-| 6 | `fwNumLaw` | js/textUtilsMain.js | 条文・日付・参照番号の全角化。 |
-| 7 | `fwRefLaw` | js/textUtilsMain.js | 「表◯」等の参照番号列を安全側で全角化。 |
-| 8 | `tightClaims` | js/textUtilsMain.js | `『』` 内の空白行を削除。（※ `alphaCase` は英語原文向けにあえて実行しない） |
+| 8 | `tightClaims` | js/textUtilsMain.js | `『』` で囲まれた範囲内の空白行を削除する。 |
 
 ### stripBlankLines チェーン（7 関数）— `js/stripBlankLines.js`
 

@@ -83,7 +83,7 @@
     // PCT: 国際出願
     pct: [makeChainModeHandler("pct", ["init", "main"])],
     // PCT (EN): 原文が主に英語の国際出願
-    pct_eng: [makeChainModeHandler("pct_eng", ["init", "main_PCTENG"])],
+    pct_eng: [makeChainModeHandler("pct_eng", ["init", "main"])],
     // 段落抽出・整形（EN）
     paragraph: [makeChainModeHandler("paragraph", ["parExtract"])],
     // HTML 変換

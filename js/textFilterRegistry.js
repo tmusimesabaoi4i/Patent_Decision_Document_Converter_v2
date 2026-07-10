@@ -100,7 +100,6 @@
   var fwHead = TextLib_Main.fwHead;
   var fwNumLaw = TextLib_Main.fwNumLaw;
   var fwRefLaw = TextLib_Main.fwRefLaw;
-  var alphaCase = TextLib_Main.alphaCase;
   var tightClaims = TextLib_Main.tightClaims;
 
   /**
@@ -272,19 +271,6 @@
     fwHead,
     fwNumLaw,
     fwRefLaw,
-    alphaCase, // 表とか図の英字を大文字にしない
-    tightClaims,
-  ]);
-
-  textFilterRegistry.register("main_PCTENG", [
-    applyFlexibleMap,
-    padHead,
-    trimHead,
-    tightBelowBullet, // 下の改行を詰める(箇条書き系は全角になると反応しないので、)
-    fwHead,
-    fwNumLaw,
-    fwRefLaw,
-    // alphaCase, // 表とか図の英字を大文字にしない
     tightClaims,
   ]);
 

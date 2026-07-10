@@ -2,5 +2,5 @@
 １.CRLF改行のテスト。
 　段落[００１２]を参照。
 
-(１)Fullwidth
+(１)fullwidth
 　以上

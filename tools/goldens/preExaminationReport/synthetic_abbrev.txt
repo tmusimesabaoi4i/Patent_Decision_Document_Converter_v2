@@ -5,9 +5,9 @@
 
 　端末(ms)は、iPadOSを搭載したタブレットであってもよい。H Oを実行する際、R-Aプリアンブルを送信する。
 
-　PDCCHを介してDCIを受信し、PDSCHでデータを受け取る。HARQ-AckをPUCCHで報告する。
+　PDCCHを介してDCIを受信し、PDSCHでデータを受け取る。HARQ-ackをPUCCHで報告する。
 
-　eMBBおよびURLLCのユースケースでは、QoSフローがSdapレイヤで処理される。
+　eMBBおよびURLLCのユースケースでは、QoSフローがsdapレイヤで処理される。
 
 　ROM、RAM、CPUなどのハードウェア。TCP/IPプロトコル。MIMOアンテナとOFDM変調。
 
@@ -15,6 +15,6 @@
 
 　Measurement Reportを送信する。RRC Reconfigurationが完了する。UE Capability Informationを通知する。
 
-　SNRとSINRは異なる指標である。NR-UとNRの違い。AnrとNRの違い。
+　SNRとSINRは異なる指標である。NR-uとNRの違い。anrとNRの違い。
 
 　以上
