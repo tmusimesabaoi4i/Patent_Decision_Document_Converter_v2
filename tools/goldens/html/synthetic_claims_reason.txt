@@ -1,0 +1,21 @@
+<div class="patent-text">
+<p class="patent-paragraph no-num">この出願は、次の理由によって、拒絶をすべきものです。</p>
+<p class="patent-paragraph no-num">●理由1(新規性)について</p>
+<p class="patent-paragraph no-num">・請求項 1-3・引用文献等 1-2・備考</p>
+<p class="patent-paragraph no-num">引用文献1には、無線通信システムの基地局が記載されている。</p>
+<p class="patent-paragraph no-num">引用文献2には、端末装置の構成が記載されている。</p>
+<p class="patent-paragraph no-num">●理由2(進歩性)について</p>
+<p class="patent-paragraph no-num">・請求項 4・引用文献等 3</p>
+<p class="patent-paragraph no-num">引用文献3には、キャリアアグリゲーションが記載されている。</p>
+<p class="patent-paragraph no-num">当業者が容易に想到し得たものである。</p>
+<p class="patent-paragraph no-num">●理由3(明確性)について</p>
+<p class="patent-paragraph no-num">・請求項 5・備考</p>
+<p class="patent-paragraph no-num">請求項5の記載は明確でない。</p>
+<p class="patent-paragraph no-num">●印の箇条書きは本文中にあっても終端にならない。</p>
+<p class="patent-paragraph no-num">・請求項 6</p>
+<p class="patent-paragraph no-num">請求項6についても同様である。</p>
+<p class="patent-paragraph no-num">以上のとおり判断する。</p>
+<p class="patent-paragraph no-num">&lt;拒絶の理由を発見しない請求項&gt;</p>
+<p class="patent-paragraph no-num">請求項7に係る発明については、現時点では拒絶の理由を発見しない。</p>
+<p class="patent-paragraph no-num">以上</p>
+</div>
