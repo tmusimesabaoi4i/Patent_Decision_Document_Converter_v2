@@ -20,6 +20,7 @@
 | モード別パイプライン定義 | `js/modeFunctionLists.js` 先頭コメント |
 | フィルタ登録と `runTextChains` | `js/filterChains.js` 先頭コメント |
 | ボタン別 関数フロー（UI 操作ごとの通過関数） | [js/flow.md](js/flow.md) |
+| マーカー間の空白行削除の構造一覧 | [js/stripBlankLines.md](js/stripBlankLines.md) |
 
 ## プロジェクト構成（概要）
 

@@ -56,7 +56,7 @@ flowchart TD
 | エンジン | 使用する関数 | 空行判定 | マーカー直後・直前の改行（pad） | 内部の trim | 備考 |
 |---|---|---|---|---|---|
 | `stripBetween` | `stripBlankLinesIn*` 7 関数 | `textPrimitives.isBlankLine` | `pad.before` / `pad.after` で制御 | なし | 正規表現 `(start)([\s\S]*?)(end)` で非貪欲マッチ |
-| 独自（lookahead） | `stripBlankLinesInClaimsBlock` | `textPrimitives.isBlankLine` | ヘッダ直後 `\n`、次ヘッダ直前に空行 1 行を残す | なし | 終端は `(?=\n・請求項)` で先読み（消費しない） |
+| 独自（lookahead） | `stripBlankLinesInClaimsBlock` | `textPrimitives.isBlankLine` | ヘッダ直後 `\n`、終端行直前に空行 1 行を残す | なし | 終端は `(?=\n(?:・請求項\|●理由\|[<＜]))` で先読み（消費しない） |
 | `stripBlankLinesBetween` | `tightClaims` | `isBlankLineLoose`（`\n` も空白類に含む緩和版） | なし（pad 概念なし） | `joinLines(outLines).trim()` あり | `stripBetween` と統合すると出力が変わるため並存 |
 
 ### `stripBetween` の処理手順
@@ -121,11 +121,11 @@ flowchart TD
 | 項目 | 内容 |
 |---|---|
 | 開始（ヘッダ群） | 行頭 `・請求項…`（任意で続けて `・引用文献等…` / `・備考…`） |
-| 終了（次ブロックの手前） | `(?=\n・請求項)` — 次の `・請求項` 行の直前まで（終端行は消費しない） |
-| 対象テキスト | ヘッダ群と次の `・請求項` の間の **本文** のみ |
-| 空行削除後 | ヘッダ直後に `\n`、本文、次ヘッダ直前に空行 1 行（`\n`）を残す |
-| 本文が空のとき | ヘッダ群が隣接している等、本文行が 0 行なら改変しない |
-| 対象外 | 最後のヘッダ群より後ろ（閉じヘッダのない本文） |
+| 終了（終端行の手前） | `(?=\n(?:・請求項\|●理由\|[<＜]))` — 次のいずれかの行の直前まで（終端行は消費しない）: ① `・請求項` で始まる行（次のヘッダ群） ② `●理由` で始まる行（●むすび等、他の●行では終端しない） ③ `<` / `＜` で始まる山括弧見出し行（例: `<引用文献等一覧>`。最終ブロックの終端になることが多い） |
+| 対象テキスト | ヘッダ群と終端行の間の **本文** のみ |
+| 空行削除後 | ヘッダ直後に `\n`、本文、終端行直前に空行 1 行（`\n`）を残す |
+| 本文が空のとき | ヘッダ群と終端行が隣接している等、本文行が 0 行なら改変しない |
+| 対象外 | 終端行が見つからない末尾の本文 |
 
 #### ヘッダ群の正規表現（`CLAIMS_HEADER_SRC`）
 
@@ -169,7 +169,7 @@ flowchart TD
 | `stripBlankLinesInPriority` | `stripBlankLines` | 優先権ブロック内の空行削除 |
 | `stripBlankLinesInAmendmentSuggestion` | `stripBlankLines` | 補正の示唆ブロック内の空行削除 |
 | `stripBlankLinesInAddedNewMatter` | `stripBlankLines` | 新規事項追加認定ブロック内の空行削除 |
-| `stripBlankLinesInClaimsBlock` | `stripBlankLinesTight` | 請求項ヘッダブロック（`・請求項` 群〜次の `・請求項` 手前）内の空行削除 |
+| `stripBlankLinesInClaimsBlock` | `stripBlankLinesTight` | 請求項ヘッダブロック（`・請求項` 群〜終端行（次の `・請求項` / `●理由` / 山括弧見出し）手前）内の空行削除 |
 | `tightClaims` | `formatBody` | 請求項引用（`『…』`）内の空行削除 |
 
 ---
