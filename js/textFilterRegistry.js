@@ -21,7 +21,7 @@
  *   - root.runTextChains(names, str, ...)
  *       複数のフィルタチェーンを順番に実行する汎用ヘルパ。
  *
- * ▼ "init" チェーンの実行順
+ * ▼ "normalize" チェーンの実行順
  *   nl → hw → clean → rmBlank → squeeze → trim → gap → lead
  * --------------------------------------------------------------------------
  */
@@ -260,12 +260,12 @@
   });
 
   // -------------------------------------------------------------------------
-  // "init" パイプラインの登録
+  // "normalize" パイプラインの登録
   // nl → hw → clean → rmBlank → squeeze → trim → gap → lead
   // -------------------------------------------------------------------------
 
   /**
-   * "init" という名前で、特許文書向けの前処理パイプラインを登録する。
+   * "normalize" という名前で、特許文書向けの前処理パイプラインを登録する。
    * 実行順:
    *   1. nl      : 改行コードの正規化（CRLF/CR を LF に統一）
    *   2. hw      : 全角→半角への正規化 (NFKC + 補正)
@@ -276,7 +276,7 @@
    *   7. gap     : 行間の空行を「ちょうど 1 行」に正規化
    *   8. lead    : 先頭に改行を 1 つだけ付与
    */
-  textFilterRegistry.register("init", [
+  textFilterRegistry.register("normalize", [
     nl,
     hw,
     clean,
@@ -287,7 +287,7 @@
     lead
   ]);
 
-  textFilterRegistry.register("main", [
+  textFilterRegistry.register("formatBody", [
     applyFlexibleMap,
     padHead,
     trimHead,
@@ -308,7 +308,7 @@
     stripBlankLinesInAddedNewMatter
   ]);
 
-  textFilterRegistry.register("convertEnd", [
+  textFilterRegistry.register("formatTail", [
     convertForDoc,
     convertForFamily,
     convertForCau,
@@ -316,15 +316,15 @@
     applyFlexibleMap,
   ]);
 
-  textFilterRegistry.register("finalAction", [
+  textFilterRegistry.register("formatBoilerplate", [
     convertForOther,
   ]);
 
-  textFilterRegistry.register("parExtract", [
+  textFilterRegistry.register("extractParagraphRefs", [
     extractParagraphAndFigureRefs,
   ]);
 
-  textFilterRegistry.register("tohtml", [
+  textFilterRegistry.register("toHtml", [
     toHtml,
   ]);
 
@@ -335,7 +335,7 @@
   /**
    * root.TextFilterRegistry という名前で公開する。
    * - 他のスクリプトから:
-   *     TextFilterRegistry.apply("init", text).then(...);
+   *     TextFilterRegistry.apply("normalize", text).then(...);
    *   のように利用できる。
    */
   root.TextFilterRegistry = textFilterRegistry;
@@ -352,7 +352,7 @@
    *   - true  (デフォルト): その時点で中断し、エラーをそのまま投げる。
    *   - false: onError を呼んだあと続行し、current はエラー前の値を維持。
    *
-   * @param {string[]} names 実行したいフィルタリスト名の配列（例: ["init","exp1","exp2"]）
+   * @param {string[]} names 実行したいフィルタリスト名の配列（例: ["normalize","exp1","exp2"]）
    * @param {string} str 入力文字列
    * @param {any[]} [invokeArgs] 各ステップに共通で渡す追加引数
    * @param {{ stopOnError?: boolean }} [options] 実行時オプション
