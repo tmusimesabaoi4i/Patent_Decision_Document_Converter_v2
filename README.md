@@ -18,7 +18,7 @@
 | 変換パイプラインの全体像・モード対応・フィルタの追加 | [filterRegistry/filterRegistry.md](filterRegistry/filterRegistry.md) |
 | アプリ本体・モード登録 | `js/app.js` 先頭コメント |
 | モード別パイプライン定義 | `js/modeFunctionLists.js` 先頭コメント |
-| フィルタ登録と `runTextChains` | `js/textFilterRegistry.js` 先頭コメント |
+| フィルタ登録と `runTextChains` | `js/filterChains.js` 先頭コメント |
 | ボタン別 関数フロー（UI 操作ごとの通過関数） | [js/flow.md](js/flow.md) |
 
 ## プロジェクト構成（概要）
@@ -30,16 +30,18 @@ css/
   layout.css                 … レイアウト
   components.css             … コンポーネント別スタイル
 js/
-  textUtilsStd.js            … 共通プリミティブ（改行・空白判定・全角半角変換など）
-  textUtilsInit.js           … 前処理（init チェーン）
-  textUtilsMain.js           … 本文整形（main チェーン）
-  stripBlankLines.js         … セクション別空行削除
-  textUtilsConvertForDoc.js  … 文書末尾の書式変換
+  textPrimitives.js          … 共通プリミティブ（改行・空白判定・全角半角変換など）
+  normalizeText.js           … 前処理（normalize チェーン）
+  formatBody.js              … 本文整形（formatBody チェーン）
+  stripBlankLines.js         … セクション別空行削除（tightClaims も定義）
+  formatSearchResult.js      … 先行技術文献調査結果・ファミリー文献情報ブロックの書式変換
   telecomAbbreviations.js    … 通信・3GPP 系略語辞書（純データ）
-  textUtilsConvertForCau.js  … 拒絶理由・その他の末尾処理（略語辞書を適用）
+  replaceAbbreviations.js    … 略語置換エンジン（telecomAbbreviations.js の辞書からTrieを構築）
+  formatAmendmentNote.js     … 補正の示唆・署名ブロックの書式変換
+  formatBoilerplate.js       … 定型行整形（「記」／<引用文献等一覧>／ハイフン線など）
   paragraphExtraction.js     … 段落・図番号抽出
   makeHtml.js                … HTML 変換
-  textFilterRegistry.js      … フィルタチェーン登録・runTextChains
+  filterChains.js            … フィルタチェーン登録・runTextChains
   modeFunctionLists.js       … モードキー → チェーン名リスト
   app.js                     … アプリ本体（起動・DOM 配線）
 filterRegistry/

@@ -2,7 +2,7 @@
 
 この文書は、UI（`main.html`）の各ボタン・ショートカット操作ごとに「通過する関数のチェーン」と「各関数が何をするか」を 1〜2 行でまとめたものです。
 Convert / Copy の入り口から、モードハンドラ → フィルタチェーン → 個別フィルタ関数までを、実際のコード（`js/*.js` と `filterRegistry/filterRegistry.js`）に沿って追えるようにしています。
-コード（特に `js/textFilterRegistry.js` のチェーン定義や `js/modeFunctionLists.js` のモード対応）を変更した場合は、この文書も必ず更新してください。
+コード（特に `js/filterChains.js` のチェーン定義や `js/modeFunctionLists.js` のモード対応）を変更した場合は、この文書も必ず更新してください。
 
 ---
 
@@ -31,8 +31,8 @@ Convert ボタンのクリック（またはショートカット）から出力
 5. **`_buildPipeline(modeKey)`**（`js/app.js`）… `ModeRegistry.getRawHandlers` でモードのハンドラ配列を取得し、各ハンドラを `async (text) => string` に統一ラップした配列を返す。
 6. **`_setBusy(true)`**（`js/app.js`）… `.app` に `is-busy` / `aria-busy` を付与し、Convert ボタンを `disabled` にして二重実行を防止（完了後 `finally` で `_setBusy(false)`）。
 7. **モードハンドラ**（`js/modeFunctionLists.js` の `makeChainModeHandler` が生成）… 内部で `root.runTextChains(names, text, undefined, { stopOnError: true })` を呼ぶ。`runTextChains` が無ければ入力をそのまま返す。
-8. **`runTextChains(names, str, ...)`**（`js/textFilterRegistry.js`）… `names` のチェーン名を先頭から順に `TextFilterRegistry.apply` に流し、前段の出力を次段の入力にする汎用ヘルパ（Promise チェーン）。
-9. **`TextFilterRegistry.apply(name, current)`**（`FilterRegistry` インスタンス）… 名前付きチェーンを 1 つ適用する。内部で `_runPipeline` を呼ぶ。
+8. **`runTextChains(names, str, ...)`**（`js/filterChains.js`）… `names` のチェーン名を先頭から順に `filterChains.apply` に流し、前段の出力を次段の入力にする汎用ヘルパ（Promise チェーン）。
+9. **`filterChains.apply(name, current)`**（`FilterRegistry` インスタンス）… 名前付きチェーンを 1 つ適用する。内部で `_runPipeline` を呼ぶ。
 10. **`FilterRegistry._runPipeline`**（`filterRegistry/filterRegistry.js`）… チェーン内の各フィルタ関数を登録順にシーケンシャル適用（同期/非同期両対応）。前後で `beforeApply` / `afterApply` フック、失敗時は `onError`。
 11. **出力反映**（`js/app.js`）… 最終結果を `#outputText`（`this._outputEl.value`）へ代入し、「変換が完了しました。」トーストを表示。
 
@@ -44,8 +44,8 @@ flowchart TD
     D --> E["_buildPipeline (ハンドラを async 化)"]
     E --> F["_setBusy(true)"]
     F --> G["モードハンドラ (makeChainModeHandler)"]
-    G --> H["runTextChains (textFilterRegistry.js)"]
-    H --> I["TextFilterRegistry.apply"]
+    G --> H["runTextChains (filterChains.js)"]
+    H --> I["filterChains.apply"]
     I --> J["FilterRegistry._runPipeline (各フィルタを順に適用)"]
     J --> K["#outputText へ反映 + トースト"]
     K --> L["_setBusy(false)"]
@@ -59,56 +59,56 @@ flowchart TD
 
 | モード（`value`） | UI 名称 | 実行チェーン（この順） |
 |---|---|---|
-| `officeAction` | Office Action | `init` → `main` → `stripBlankLines` → `convertEnd` |
-| `finalOfficeAction` | Final Office Action | `init` → `main` → `stripBlankLines` → `finalAction` |
-| `amendmentRefused` | Amendment Refused | `init` → `main` → `stripBlankLines` → `convertEnd` |
-| `preExaminationReport` | Pre-examination Report | `init` → `main` → `stripBlankLines` → `convertEnd` |
-| `pct` | PCT | `init` → `main` |
-| `pct_eng` | PCT (English) | `init` → `main` |
-| `paragraph` | Paragraphs | `parExtract` |
-| `html` | to HTML | `tohtml` |
+| `officeAction` | Office Action | `normalize` → `formatBody` → `stripBlankLines` → `formatTail` |
+| `finalOfficeAction` | Final Office Action | `normalize` → `formatBody` → `stripBlankLines` → `formatBoilerplate` |
+| `amendmentRefused` | Amendment Refused | `normalize` → `formatBody` → `stripBlankLines` → `formatTail` |
+| `preExaminationReport` | Pre-examination Report | `normalize` → `formatBody` → `stripBlankLines` → `formatTail` |
+| `pct` | PCT | `normalize` → `formatBody` |
+| `pct_eng` | PCT (English) | `normalize` → `formatBody` |
+| `paragraph` | Paragraphs | `extractParagraphRefs` |
+| `html` | to HTML | `toHtml` |
 
 補足:
-- `officeAction` / `amendmentRefused` / `preExaminationReport` の 3 モードは同一チェーン構成（`init → main → stripBlankLines → convertEnd`）です。
-- `finalOfficeAction` は 4 段目だけが異なり `convertEnd` の代わりに `finalAction`（`convertForOther` のみ）を実行します。
-- `pct` は末尾の空行削除・末尾整形を行わず `init → main` のみ。`pct_eng` は `pct` と同じ構成（`init → main`）です。
-- `paragraph` / `html` は前処理（`init`）を通さず、専用の単一チェーンのみを実行します。
+- `officeAction` / `amendmentRefused` / `preExaminationReport` の 3 モードは同一チェーン構成（`normalize → formatBody → stripBlankLines → formatTail`）です。
+- `finalOfficeAction` は 4 段目だけが異なり `formatTail` の代わりに `formatBoilerplate`（`formatBoilerplateLines` のみ）を実行します。
+- `pct` は末尾の空行削除・末尾整形を行わず `normalize → formatBody` のみ。`pct_eng` は `pct` と同じ構成（`normalize → formatBody`）です。
+- `paragraph` / `html` は前処理（`normalize`）を通さず、専用の単一チェーンのみを実行します。
 
 ---
 
 ## チェーン別: 通過する関数と処理内容
 
-各チェーンについて、`js/textFilterRegistry.js` に登録された実行順のまま関数を並べています。説明は各関数の JSDoc／実装に基づきます。
+各チェーンについて、`js/filterChains.js` に登録された実行順のまま関数を並べています。説明は各関数の JSDoc／実装に基づきます。
 
-### init チェーン（8 関数）— `js/textUtilsInit.js`
+### normalize チェーン（8 関数）— `js/normalizeText.js`
 
-入力テキストの初期正規化。定義: `register("init", [nl, hw, clean, rmBlank, squeeze, trim, gap, lead])`。
-
-| 順 | 関数 | 定義ファイル | 処理内容 |
-|---|---|---|---|
-| 1 | `nl` | js/textUtilsInit.js | CRLF / CR / LF をすべて `\n` に統一する。 |
-| 2 | `hw` | js/textUtilsInit.js | NFKC 正規化＋全角スペース変換で全角を半角へ寄せる。 |
-| 3 | `clean` | js/textUtilsInit.js | タブ類は半角スペースへ、ASCII 制御文字や Unicode の制御・書式・サロゲート等を削除（改行は保持）。 |
-| 4 | `rmBlank` | js/textUtilsInit.js | 空白のみの行を含む空行をすべて削除する。 |
-| 5 | `squeeze` | js/textUtilsInit.js | 連続する半角スペース 2 個以上を 1 個に圧縮する。 |
-| 6 | `trim` | js/textUtilsInit.js | 各行の先頭・末尾の空白を行単位で削除する（改行は保持）。 |
-| 7 | `gap` | js/textUtilsInit.js | 各行の直後に空行を 1 行ずつ挿入し、行間を必ず 1 空行にする。 |
-| 8 | `lead` | js/textUtilsInit.js | 文字列先頭に改行を 1 つだけ付与する（既に先頭が改行なら何もしない）。 |
-
-### main チェーン（8 関数）— `js/textUtilsMain.js`
-
-本文の見出し・箇条書き・条文番号などの整形／全角化。定義: `register("main", [applyFlexibleMap, padHead, trimHead, tightBelowBullet, fwHead, fwNumLaw, fwRefLaw, tightClaims])`。
+入力テキストの初期正規化。定義: `register("normalize", [nl, hw, clean, rmBlank, squeeze, trim, gap, lead])`。`nl` / `hw` は `textPrimitives.js` の実装へ委譲している。
 
 | 順 | 関数 | 定義ファイル | 処理内容 |
 |---|---|---|---|
-| 1 | `applyFlexibleMap` | js/textUtilsConvertForCau.js | 空白/ハイフン/アンダースコア・大小を無視した最長一致で、通信系略語を正式表記へ置換（辞書は `telecomAbbreviations.js`）。 |
-| 2 | `padHead` | js/textUtilsMain.js | 空行以外の各行の先頭に全角スペースを 1 個（既定）挿入する。 |
-| 3 | `trimHead` | js/textUtilsMain.js | ドット箇条書き・見出しマーク・`<`/`-` で始まる行の行頭空白 1 個を条件付きで削除する。 |
-| 4 | `tightBelowBullet` | js/textUtilsMain.js | 箇条書き行（ドット/見出し/`-`/`<`）の直下が空行なら、その空行を 1 行だけ詰める。 |
-| 5 | `fwHead` | js/textUtilsMain.js | 行頭の見出しマークを全角化し、さらに `●`/`・` で始まる行を行全体全角化（内部で `fwLineStartsWithBlackDot` / `fwLineStartsWithSmallDot` を使用）。 |
-| 6 | `fwNumLaw` | js/textUtilsMain.js | 「第◯条第◯項第◯号」「令和/平成の日付」「請求項/段落/図」等の番号を全角化する（条文・参照番号系）。 |
-| 7 | `fwRefLaw` | js/textUtilsMain.js | 「表◯」などの参照番号列を数字開始のときだけ全角化（「特表」は除外し誤変換を防止）。 |
-| 8 | `tightClaims` | js/textUtilsMain.js | `『』` で囲まれた範囲内の空白行を削除する。 |
+| 1 | `nl` | js/textPrimitives.js | CRLF / CR / LF をすべて `\n` に統一する。 |
+| 2 | `hw` | js/textPrimitives.js | NFKC 正規化＋全角スペース変換で全角を半角へ寄せる。 |
+| 3 | `clean` | js/normalizeText.js | タブ類は半角スペースへ、ASCII 制御文字や Unicode の制御・書式・サロゲート等を削除（改行は保持）。 |
+| 4 | `rmBlank` | js/normalizeText.js | 空白のみの行を含む空行をすべて削除する。 |
+| 5 | `squeeze` | js/normalizeText.js | 連続する半角スペース 2 個以上を 1 個に圧縮する。 |
+| 6 | `trim` | js/normalizeText.js | 各行の先頭・末尾の空白を行単位で削除する（改行は保持）。 |
+| 7 | `gap` | js/normalizeText.js | 各行の直後に空行を 1 行ずつ挿入し、行間を必ず 1 空行にする。 |
+| 8 | `lead` | js/normalizeText.js | 文字列先頭に改行を 1 つだけ付与する（既に先頭が改行なら何もしない）。 |
+
+### formatBody チェーン（8 関数）— `js/formatBody.js`
+
+本文の見出し・箇条書き・条文番号などの整形／全角化。定義: `register("formatBody", [replaceAbbreviations, padHead, trimHead, tightBelowBullet, fwHead, fwNumLaw, fwRefLaw, tightClaims])`。
+
+| 順 | 関数 | 定義ファイル | 処理内容 |
+|---|---|---|---|
+| 1 | `replaceAbbreviations` | js/replaceAbbreviations.js | 空白/ハイフン/アンダースコア・大小を無視した最長一致で、通信系略語を正式表記へ置換（辞書は `telecomAbbreviations.js`）。 |
+| 2 | `padHead` | js/formatBody.js | 空行以外の各行の先頭に全角スペースを 1 個（既定）挿入する。 |
+| 3 | `trimHead` | js/formatBody.js | ドット箇条書き・見出しマーク・`<`/`-` で始まる行の行頭空白 1 個を条件付きで削除する。 |
+| 4 | `tightBelowBullet` | js/formatBody.js | 箇条書き行（ドット/見出し/`-`/`<`）の直下が空行なら、その空行を 1 行だけ詰める。 |
+| 5 | `fwHead` | js/formatBody.js | 行頭の見出しマークを全角化し、さらに `●`/`・` で始まる行を行全体全角化（内部で `fwLineStartsWithBlackDot` / `fwLineStartsWithSmallDot` を使用）。 |
+| 6 | `fwNumLaw` | js/formatBody.js | 「第◯条第◯項第◯号」「令和/平成の日付」「請求項/段落/図」等の番号を全角化する（条文・参照番号系）。 |
+| 7 | `fwRefLaw` | js/formatBody.js | 「表◯」などの参照番号列を数字開始のときだけ全角化（「特表」は除外し誤変換を防止）。 |
+| 8 | `tightClaims` | js/stripBlankLines.js | `『』` で囲まれた範囲内の空白行を削除する（`formatBody` チェーンから利用されるが、定義自体は `stripBlankLines.js`）。 |
 
 ### stripBlankLines チェーン（7 関数）— `js/stripBlankLines.js`
 
@@ -124,39 +124,39 @@ flowchart TD
 | 6 | `stripBlankLinesInAmendmentSuggestion` | js/stripBlankLines.js | 「<補正の示唆>」〜「なお、上記の補正の示唆は…出願人が決定すべきものである。」の範囲内の空行を削除。 |
 | 7 | `stripBlankLinesInAddedNewMatter` | js/stripBlankLines.js | 「例えば、請求項１は、」〜「」と認める。」の範囲内の空行を削除。 |
 
-### convertEnd チェーン（5 関数）— `js/textUtilsConvertForDoc.js` / `js/textUtilsConvertForCau.js`
+### formatTail チェーン（5 関数）— `js/formatSearchResult.js` / `js/formatAmendmentNote.js` / `js/formatBoilerplate.js` / `js/replaceAbbreviations.js`
 
-文書末尾ブロック（調査結果・ファミリー情報・補正の示唆・署名など）の書式変換と略語再適用。定義: `register("convertEnd", [convertForDoc, convertForFamily, convertForCau, convertForOther, applyFlexibleMap])`。
-
-| 順 | 関数 | 定義ファイル | 処理内容 |
-|---|---|---|---|
-| 1 | `convertForDoc` | js/textUtilsConvertForDoc.js | 「記」行より上を全角化し番号行を整形。さらに「先行技術文献調査結果の記録」ブロック内部を行単位で `convertEachLine` により整形（IPC 行・国別行のインデント揃え等）。 |
-| 2 | `convertForFamily` | js/textUtilsConvertForDoc.js | 「<ファミリー文献情報>」〜問合せ文の間を行単位で整形（番号行はそのまま、本文行は全角スペース 3 個インデント＋英数字半角化）。 |
-| 3 | `convertForCau` | js/textUtilsConvertForCau.js | 「<補正をする際の注意>」以降を対象に、＜補正の示唆＞の番号行・＜ファミリー文献情報＞ブロックを状態遷移で判定しつつ行単位整形（`processCauTail`）。 |
-| 4 | `convertForOther` | js/textUtilsConvertForCau.js | 「記」「<引用文献等一覧>」「区切りハイフン線」等の定型行を所定レイアウトへ置換し、最後に残った `<`/`>` を全角に変換。 |
-| 5 | `applyFlexibleMap` | js/textUtilsConvertForCau.js | 略語辞書による正式表記置換を末尾でもう一度適用（このフルパイプラインでは `main` 先頭に続く 2 回目の適用）。 |
-
-> 注: フルパイプライン（例: `officeAction`）では `applyFlexibleMap` が **2 回**通過します。1 回目は `main` チェーンの先頭、2 回目は `convertEnd` チェーンの末尾です。
-
-### finalAction チェーン（1 関数）— `js/textUtilsConvertForCau.js`
-
-`finalOfficeAction` 専用の末尾処理。定義: `register("finalAction", [convertForOther])`。
+文書末尾ブロック（調査結果・ファミリー情報・補正の示唆・署名など）の書式変換と略語再適用。定義: `register("formatTail", [formatSearchResultBlock, formatFamilyInfoBlock, formatAmendmentNoteBlock, formatBoilerplateLines, replaceAbbreviations])`。
 
 | 順 | 関数 | 定義ファイル | 処理内容 |
 |---|---|---|---|
-| 1 | `convertForOther` | js/textUtilsConvertForCau.js | 「記」「<引用文献等一覧>」「<最後の拒絶理由通知とする理由>」等の定型行を所定レイアウトへ置換し、`<`/`>` を全角化。 |
+| 1 | `formatSearchResultBlock` | js/formatSearchResult.js | 「記」行より上を全角化し番号行を整形。さらに「先行技術文献調査結果の記録」ブロック内部を行単位で `formatSearchResultLine` により整形（IPC 行・国別行のインデント揃え等）。 |
+| 2 | `formatFamilyInfoBlock` | js/formatSearchResult.js | 「<ファミリー文献情報>」〜問合せ文の間を行単位で整形（番号行はそのまま、本文行は全角スペース 3 個インデント＋英数字半角化）。 |
+| 3 | `formatAmendmentNoteBlock` | js/formatAmendmentNote.js | 「<補正をする際の注意>」以降を対象に、＜補正の示唆＞の番号行・＜ファミリー文献情報＞ブロックを状態遷移で判定しつつ行単位整形（`formatAmendmentNoteTail`）。 |
+| 4 | `formatBoilerplateLines` | js/formatBoilerplate.js | 「記」「<引用文献等一覧>」「区切りハイフン線」等の定型行を所定レイアウトへ置換し、最後に残った `<`/`>` を全角に変換。 |
+| 5 | `replaceAbbreviations` | js/replaceAbbreviations.js | 略語辞書による正式表記置換を末尾でもう一度適用（このフルパイプラインでは `formatBody` 先頭に続く 2 回目の適用）。 |
 
-### parExtract チェーン（1 関数）— `js/paragraphExtraction.js`
+> 注: フルパイプライン（例: `officeAction`）では `replaceAbbreviations` が **2 回**通過します。1 回目は `formatBody` チェーンの先頭、2 回目は `formatTail` チェーンの末尾です。
 
-`paragraph` モード専用。定義: `register("parExtract", [extractParagraphAndFigureRefs])`。
+### formatBoilerplate チェーン（1 関数）— `js/formatBoilerplate.js`
+
+`finalOfficeAction` 専用の末尾処理。定義: `register("formatBoilerplate", [formatBoilerplateLines])`。
+
+| 順 | 関数 | 定義ファイル | 処理内容 |
+|---|---|---|---|
+| 1 | `formatBoilerplateLines` | js/formatBoilerplate.js | 「記」「<引用文献等一覧>」「<最後の拒絶理由通知とする理由>」等の定型行を所定レイアウトへ置換し、`<`/`>` を全角化。 |
+
+### extractParagraphRefs チェーン（1 関数）— `js/paragraphExtraction.js`
+
+`paragraph` モード専用。定義: `register("extractParagraphRefs", [extractParagraphAndFigureRefs])`。
 
 | 順 | 関数 | 定義ファイル | 処理内容 |
 |---|---|---|---|
 | 1 | `extractParagraphAndFigureRefs` | js/paragraphExtraction.js | 「段落[○○○○]」「[…]-[…]」「図…」から段落番号・図番号を抽出し、重複排除→昇順→連番圧縮して `(段落…、図…)` の文字列を生成。 |
 
-### tohtml チェーン（1 関数）— `js/makeHtml.js`
+### toHtml チェーン（1 関数）— `js/makeHtml.js`
 
-`html` モード専用。定義: `register("tohtml", [toHtml])`。
+`html` モード専用。定義: `register("toHtml", [toHtml])`。
 
 | 順 | 関数 | 定義ファイル | 処理内容 |
 |---|---|---|---|
@@ -177,9 +177,9 @@ Copy ボタン（または `Alt`+`Enter`）は `AppCore._handleCopy`（`js/app.j
 
 ## 補足: 基盤モジュール
 
-### textUtilsStd の共有プリミティブ（`js/textUtilsStd.js`）
+### textPrimitives の共有プリミティブ（`js/textPrimitives.js`）
 
-各フィルタ関数の内部から呼ばれる低レベル変換関数群（`root.textUtilsStd`）。
+各フィルタ関数の内部から呼ばれる低レベル変換関数群（`root.textPrimitives`）。
 
 | 関数 | 処理内容 |
 |---|---|
@@ -196,8 +196,8 @@ Copy ボタン（または `Alt`+`Enter`）は `AppCore._handleCopy`（`js/app.j
 
 ### FilterRegistry（`filterRegistry/filterRegistry.js`）
 
-名前付きフィルタチェーンを管理・実行する汎用基盤クラス。`register(name, fnList, options)` でチェーンを登録し、`apply(name, str, invokeArgs)` で適用します。実行本体の `_runPipeline` は、各ステップを `[current, ...step.args, ...invokeArgs]` の引数で登録順にシーケンシャル実行し、同期/非同期の戻り値を吸収して常に `Promise<string>` を返します。`beforeApply` / `afterApply` / `onError` フック、`stopOnError`（既定 true）による中断制御、ステップの `insert` / `removeAt` / `enable` などの編集 API を備えます。本アプリでは `js/textFilterRegistry.js` が単一インスタンス `TextFilterRegistry` を生成し、全チェーンを登録しています。
+名前付きフィルタチェーンを管理・実行する汎用基盤クラス。`register(name, fnList, options)` でチェーンを登録し、`apply(name, str, invokeArgs)` で適用します。実行本体の `_runPipeline` は、各ステップを `[current, ...step.args, ...invokeArgs]` の引数で登録順にシーケンシャル実行し、同期/非同期の戻り値を吸収して常に `Promise<string>` を返します。`beforeApply` / `afterApply` / `onError` フック、`stopOnError`（既定 true）による中断制御、ステップの `insert` / `removeAt` / `enable` などの編集 API を備えます。本アプリでは `js/filterChains.js` が単一インスタンス `filterChains` を生成し、全チェーンを登録しています。
 
 ### telecomAbbreviations.js（略語辞書データ）
 
-通信・3GPP 系の略語置換辞書（`root.telecomAbbreviations`）。ロジックを持たない純データで、`replaceMap`（通常マップ）・`conditionalShortMap`（境界必須の短語）・`boundarySensitiveKeys` を公開します。`textUtilsConvertForCau.js` がモジュール読み込み時にこの辞書を正規化して最長一致用の Trie を一度だけ構築し、`applyFlexibleMap` がその事前構築済み Trie を使って空白/ハイフン/アンダースコア・大小を無視した置換を行います。
+通信・3GPP 系の略語置換辞書（`root.telecomAbbreviations`）。ロジックを持たない純データで、`replaceMap`（通常マップ）・`conditionalShortMap`（境界必須の短語）・`boundarySensitiveKeys` を公開します。`replaceAbbreviations.js` がモジュール読み込み時にこの辞書を正規化して最長一致用の Trie を一度だけ構築し、`replaceAbbreviations` がその事前構築済みの Trie を使って空白/ハイフン/アンダースコア・大小を無視した置換を行います。

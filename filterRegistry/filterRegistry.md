@@ -16,8 +16,8 @@ flowchart LR
   App["app.js"]
   Modes["modeFunctionLists.js"]
   Chains["runTextChains"]
-  Registry["TextFilterRegistry"]
-  Filters["textUtils* / telecomAbbreviations 等"]
+  Registry["filterChains"]
+  Filters["normalizeText / formatBody / telecomAbbreviations 等"]
 
   UI --> App
   App -->|"NFKC 半角化"| App
@@ -32,9 +32,9 @@ flowchart LR
 | UI | `main.html` | モード選択・入出力・ボタン |
 | オーケストレーション | `app.js` | 半角正規化、モードキー取得、パイプライン実行 |
 | モード定義 | `modeFunctionLists.js` | モードキー → フィルタチェーン名の対応 |
-| チェーン実行 | `textFilterRegistry.js` | `runTextChains`・`TextFilterRegistry` の提供 |
+| チェーン実行 | `filterChains.js` | `runTextChains`・`filterChains` インスタンスの提供 |
 | フィルタ基盤 | `filterRegistry.js` | 名前付きリストの登録・順次実行 |
-| 変換関数 | `textUtils*`, `telecomAbbreviations.js` 等 | 実際の文字列変換 |
+| 変換関数 | `normalizeText.js`, `formatBody.js`, `stripBlankLines.js`, `formatSearchResult.js`, `formatAmendmentNote.js`, `replaceAbbreviations.js`, `formatBoilerplate.js`, `telecomAbbreviations.js` 等 | 実際の文字列変換 |
 
 ### 実行フロー
 
@@ -42,7 +42,7 @@ flowchart LR
 2. `app.js` が入力を `toHalfWidth()`（NFKC）で半角正規化する
 3. `main.html` のラジオ `value`（例: `officeAction`）をモードキーとして取得する
 4. `modeFunctionLists.js` の `ModeFunctionLists[modeKey]` が `runTextChains(names, text)` を呼ぶ
-5. `runTextChains` が `TextFilterRegistry.apply(name, text)` を名前の順に実行する
+5. `runTextChains` が `filterChains.apply(name, text)` を名前の順に実行する
 6. 各フィルタリスト内の関数が変換を行い、結果が出力欄に表示される
 
 ---
@@ -53,16 +53,18 @@ flowchart LR
 
 ```
 filterRegistry.js          → root.FilterRegistry
-textUtilsStd.js            → root.textUtilsStd
-textUtilsInit.js           → root.textUtilsInit
-textUtilsMain.js           → root.textUtilsMain
+textPrimitives.js          → root.textPrimitives
+normalizeText.js           → root.normalizeText
+formatBody.js              → root.formatBody
 stripBlankLines.js         → root.stripBlankLines
-textUtilsConvertForDoc.js  → root.textUtilsConvertForDoc
+formatSearchResult.js      → root.formatSearchResult
 telecomAbbreviations.js    → root.telecomAbbreviations
-textUtilsConvertForCau.js  → root.textUtilsConvertForCau
+replaceAbbreviations.js    → root.replaceAbbreviations
+formatAmendmentNote.js     → root.formatAmendmentNote
+formatBoilerplate.js       → root.formatBoilerplate
 paragraphExtraction.js     → root.paragraphExtraction
 makeHtml.js                → root.makeHtml
-textFilterRegistry.js      → root.TextFilterRegistry, root.runTextChains
+filterChains.js            → root.filterChains, root.runTextChains
 modeFunctionLists.js       → root.ModeFunctionLists
 app.js                     → 自動起動
 ```
@@ -75,34 +77,34 @@ app.js                     → 自動起動
 
 | UI ラベル | モードキー | パイプライン |
 |---|---|---|
-| Office Action | `officeAction` | `init` → `main` → `stripBlankLines` → `convertEnd` |
-| Final Office Action | `finalOfficeAction` | `init` → `main` → `stripBlankLines` → `finalAction` |
-| Amendment Refused | `amendmentRefused` | `init` → `main` → `stripBlankLines` → `convertEnd` |
-| Pre-examination Report | `preExaminationReport` | `init` → `main` → `stripBlankLines` → `convertEnd` |
-| PCT | `pct` | `init` → `main` |
-| PCT (English) | `pct_eng` | `init` → `main` |
-| Paragraphs | `paragraph` | `parExtract` |
-| to HTML | `html` | `tohtml` |
+| Office Action | `officeAction` | `normalize` → `formatBody` → `stripBlankLines` → `formatTail` |
+| Final Office Action | `finalOfficeAction` | `normalize` → `formatBody` → `stripBlankLines` → `formatBoilerplate` |
+| Amendment Refused | `amendmentRefused` | `normalize` → `formatBody` → `stripBlankLines` → `formatTail` |
+| Pre-examination Report | `preExaminationReport` | `normalize` → `formatBody` → `stripBlankLines` → `formatTail` |
+| PCT | `pct` | `normalize` → `formatBody` |
+| PCT (English) | `pct_eng` | `normalize` → `formatBody` |
+| Paragraphs | `paragraph` | `extractParagraphRefs` |
+| to HTML | `html` | `toHtml` |
 
-- Final Office Action だけ終端が `convertEnd` ではなく `finalAction`
-- PCT 系は `stripBlankLines` / `convertEnd` を通らない
-- Paragraphs / to HTML は `init` を通らない
+- Final Office Action だけ終端が `formatTail` ではなく `formatBoilerplate`
+- PCT 系は `stripBlankLines` / `formatTail` を通らない
+- Paragraphs / to HTML は `normalize` を通らない
 
 ---
 
 ## 4. 登録フィルタリスト
 
-`textFilterRegistry.js` が `TextFilterRegistry`（`FilterRegistry` のインスタンス）に登録するリストです。
+`filterChains.js` が `filterChains`（`FilterRegistry` のインスタンス）に登録するリストです。
 
 | 名前 | 処理内容 | 定義元 |
 |---|---|---|
-| `init` | 改行統一・半角化・制御文字除去・空行削除・行間正規化 | `textUtilsInit` |
-| `main` | 略語辞書適用・見出し整形・全角化・クレーム詰めなど | `textUtilsMain`, `textUtilsConvertForCau` |
+| `normalize` | 改行統一・半角化・制御文字除去・空行削除・行間正規化 | `normalizeText`（`nl`/`hw` は `textPrimitives`） |
+| `formatBody` | 略語辞書適用・見出し整形・全角化・クレーム詰めなど | `formatBody`, `replaceAbbreviations`, `stripBlankLines`（`tightClaims`） |
 | `stripBlankLines` | セクション別の空行削除 | `stripBlankLines` |
-| `convertEnd` | 文書末尾の書式変換 | `textUtilsConvertForDoc`, `textUtilsConvertForCau` |
-| `finalAction` | 最終拒絶向け末尾処理 | `textUtilsConvertForCau` |
-| `parExtract` | 段落・図番号の抽出 | `paragraphExtraction` |
-| `tohtml` | HTML 生成 | `makeHtml` |
+| `formatTail` | 文書末尾の書式変換 | `formatSearchResult`, `formatAmendmentNote`, `formatBoilerplate`, `replaceAbbreviations` |
+| `formatBoilerplate` | 最終拒絶向け末尾処理 | `formatBoilerplate` |
+| `extractParagraphRefs` | 段落・図番号の抽出 | `paragraphExtraction` |
+| `toHtml` | HTML 生成 | `makeHtml` |
 
 ---
 
@@ -112,7 +114,7 @@ app.js                     → 自動起動
 
 1. `js/modeFunctionLists.js` の `ModeFunctionLists` にモードキーと変換関数を追加する
 2. `main.html` のラジオボタンに同じ `value` を設定する
-3. 必要なら `textFilterRegistry.js` に新しいフィルタリストを `register` し、`modeFunctionLists.js` の `names` 配列に追加する
+3. 必要なら `filterChains.js` に新しいフィルタリストを `register` し、`modeFunctionLists.js` の `names` 配列に追加する
 
 `app.js` は起動時に `ModeFunctionLists` を自動登録するため、コア側の変更は通常不要です。
 
@@ -120,11 +122,13 @@ app.js                     → 自動起動
 
 | 変更したい内容 | 触るファイル |
 |---|---|
-| 前処理（改行・半角化・空行） | `textUtilsInit.js` / `init` 登録 |
-| 本文整形 | `textUtilsMain.js` / `main` 登録 |
-| セクション別空行削除 | `stripBlankLines.js` |
-| 末尾書式変換 | `textUtilsConvertForDoc.js`, `textUtilsConvertForCau.js` |
-| 通信・3GPP 略語の追加・変更 | `js/telecomAbbreviations.js`（`replaceMap` / `conditionalShortMap`） |
+| 前処理（改行・半角化・空行） | `normalizeText.js` / `normalize` 登録 |
+| 本文整形ルール | `formatBody.js` / `formatBody` 登録 |
+| ブロック内空行削除 | `stripBlankLines.js` |
+| 末尾書式変換（調査結果・ファミリー情報） | `formatSearchResult.js` |
+| 末尾書式変換（補正の示唆・署名） | `formatAmendmentNote.js` |
+| 定型行を追加（「記」／<引用文献等一覧>／ハイフン線など） | `formatBoilerplate.js` |
+| 略語を追加 | `telecomAbbreviations.js`（`replaceMap` / `conditionalShortMap`）※置換ロジック本体は `replaceAbbreviations.js` |
 | モードごとのパイプライン構成 | `modeFunctionLists.js` 内の `names` 配列 |
 | フィルタの登録・実行基盤 | 本ドキュメント §6 |
 
@@ -132,8 +136,8 @@ app.js                     → 自動起動
 
 ## 6. FilterRegistry API
 
-実装: `filterRegistry.js`  
-本番利用: `textFilterRegistry.js` が生成する `TextFilterRegistry` インスタンス
+実装: `filterRegistry.js`
+本番利用: `filterChains.js` が生成する `filterChains` インスタンス
 
 ### 基本概念
 
@@ -214,14 +218,14 @@ const reg = new FilterRegistry({
 
 ### 本アプリ固有のラッパー
 
-`textFilterRegistry.js` が提供するヘルパです。
+`filterChains.js` が提供するヘルパです。
 
 ```javascript
 // 複数リストを順に実行
-await runTextChains(["init", "main", "convertEnd"], text);
+await runTextChains(["normalize", "formatBody", "formatTail"], text);
 
-// "init" リストのみ実行
-await TextFilterRegistry.apply("init", text);
+// "normalize" リストのみ実行
+await filterChains.apply("normalize", text);
 ```
 
 `modeFunctionLists.js` は各モードから `runTextChains(names, text)` を呼び出します。
