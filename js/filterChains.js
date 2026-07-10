@@ -12,7 +12,6 @@
  *   - stripBlankLines（root.stripBlankLines）
  *   - formatSearchResult（root.formatSearchResult）
  *   - formatAmendmentNote（root.formatAmendmentNote）
- *   - replaceAbbreviations（root.replaceAbbreviations）
  *   - formatBoilerplate（root.formatBoilerplate）
  *   - paragraphExtraction（root.paragraphExtraction）
  *   - makeHtml（root.makeHtml）
@@ -170,19 +169,6 @@
   var formatAmendmentNoteBlock = Lib_FormatAmendmentNote.formatAmendmentNoteBlock;
 
   /**
-   * replaceAbbreviations（略語置換エンジン）を取得
-   */
-  var Lib_ReplaceAbbreviations = root.replaceAbbreviations || null;
-
-  if (!Lib_ReplaceAbbreviations) {
-    // eslint-disable-next-line no-console
-    console.warn("replaceAbbreviations が見つかりません。replaceAbbreviations.js の中でグローバル名を確認してください。");
-    return;
-  }
-
-  var replaceAbbreviations = Lib_ReplaceAbbreviations.replaceAbbreviations;
-
-  /**
    * formatBoilerplate（定型行整形）を取得
    */
   var Lib_FormatBoilerplate = root.formatBoilerplate || null;
@@ -290,7 +276,6 @@
   ]);
 
   filterChains.register("formatBody", [
-    replaceAbbreviations,
     padHead,
     trimHead,
     tightBelowBullet, // 下の改行を詰める(箇条書き系は全角になると反応しないので、)
@@ -315,7 +300,6 @@
     formatFamilyInfoBlock,
     formatAmendmentNoteBlock,
     formatBoilerplateLines,
-    replaceAbbreviations,
   ]);
 
   filterChains.register("formatBoilerplate", [

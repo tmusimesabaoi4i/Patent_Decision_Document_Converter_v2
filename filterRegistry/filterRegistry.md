@@ -17,7 +17,7 @@ flowchart LR
   Modes["modeFunctionLists.js"]
   Chains["runTextChains"]
   Registry["filterChains"]
-  Filters["normalizeText / formatBody / telecomAbbreviations 等"]
+  Filters["normalizeText / formatBody 等"]
 
   UI --> App
   App -->|"NFKC 半角化"| App
@@ -34,7 +34,7 @@ flowchart LR
 | モード定義 | `modeFunctionLists.js` | モードキー → フィルタチェーン名の対応 |
 | チェーン実行 | `filterChains.js` | `runTextChains`・`filterChains` インスタンスの提供 |
 | フィルタ基盤 | `filterRegistry.js` | 名前付きリストの登録・順次実行 |
-| 変換関数 | `normalizeText.js`, `formatBody.js`, `stripBlankLines.js`, `formatSearchResult.js`, `formatAmendmentNote.js`, `replaceAbbreviations.js`, `formatBoilerplate.js`, `telecomAbbreviations.js` 等 | 実際の文字列変換 |
+| 変換関数 | `normalizeText.js`, `formatBody.js`, `stripBlankLines.js`, `formatSearchResult.js`, `formatAmendmentNote.js`, `formatBoilerplate.js` 等 | 実際の文字列変換 |
 
 ### 実行フロー
 
@@ -58,8 +58,6 @@ normalizeText.js           → root.normalizeText
 formatBody.js              → root.formatBody
 stripBlankLines.js         → root.stripBlankLines
 formatSearchResult.js      → root.formatSearchResult
-telecomAbbreviations.js    → root.telecomAbbreviations
-replaceAbbreviations.js    → root.replaceAbbreviations
 formatAmendmentNote.js     → root.formatAmendmentNote
 formatBoilerplate.js       → root.formatBoilerplate
 paragraphExtraction.js     → root.paragraphExtraction
@@ -99,9 +97,9 @@ app.js                     → 自動起動
 | 名前 | 処理内容 | 定義元 |
 |---|---|---|
 | `normalize` | 改行統一・半角化・制御文字除去・空行削除・行間正規化 | `normalizeText`（`nl`/`hw` は `textPrimitives`） |
-| `formatBody` | 略語辞書適用・見出し整形・全角化・クレーム詰めなど | `formatBody`, `replaceAbbreviations`, `stripBlankLines`（`tightClaims`） |
+| `formatBody` | 見出し整形・全角化・クレーム詰めなど | `formatBody`, `stripBlankLines`（`tightClaims`） |
 | `stripBlankLines` | セクション別の空行削除 | `stripBlankLines` |
-| `formatTail` | 文書末尾の書式変換 | `formatSearchResult`, `formatAmendmentNote`, `formatBoilerplate`, `replaceAbbreviations` |
+| `formatTail` | 文書末尾の書式変換 | `formatSearchResult`, `formatAmendmentNote`, `formatBoilerplate` |
 | `formatBoilerplate` | 最終拒絶向け末尾処理 | `formatBoilerplate` |
 | `extractParagraphRefs` | 段落・図番号の抽出 | `paragraphExtraction` |
 | `toHtml` | HTML 生成 | `makeHtml` |
@@ -128,7 +126,6 @@ app.js                     → 自動起動
 | 末尾書式変換（調査結果・ファミリー情報） | `formatSearchResult.js` |
 | 末尾書式変換（補正の示唆・署名） | `formatAmendmentNote.js` |
 | 定型行を追加（「記」／<引用文献等一覧>／ハイフン線など） | `formatBoilerplate.js` |
-| 略語を追加 | `telecomAbbreviations.js`（`replaceMap` / `conditionalShortMap`）※置換ロジック本体は `replaceAbbreviations.js` |
 | モードごとのパイプライン構成 | `modeFunctionLists.js` 内の `names` 配列 |
 | フィルタの登録・実行基盤 | 本ドキュメント §6 |
 

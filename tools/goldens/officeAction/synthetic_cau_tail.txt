@@ -14,11 +14,11 @@
 (３)あああAを追加する。
 ＜ファミリー文献情報＞
 １.US2020/0123456A1
-　　　Fgkrこけおr claIMS 1-5
+　　　Fgkrこけおr claims 1-5
 　　　継続情報あり
 ２.EP3123456B1
 　　　ファミリー文献2の本文行です。ABC123
 　　　調査資料:DB名 3GPP TSG
-　　　取得先 ＜HTTP://www.3GPP.org/ftp/specs/archive/38_series/38.331/＞
+　　　取得先 ＜http://www.3gpp.org/ftp/specs/archive/38_series/38.331/＞
 　　　検索日:2025年12月24日
 　　　以上

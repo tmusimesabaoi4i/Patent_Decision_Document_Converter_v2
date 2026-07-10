@@ -35,8 +35,6 @@ js/
   formatBody.js              … 本文整形（formatBody チェーン）
   stripBlankLines.js         … セクション別空行削除（tightClaims も定義）
   formatSearchResult.js      … 先行技術文献調査結果・ファミリー文献情報ブロックの書式変換
-  telecomAbbreviations.js    … 通信・3GPP 系略語辞書（純データ）
-  replaceAbbreviations.js    … 略語置換エンジン（telecomAbbreviations.js の辞書からTrieを構築）
   formatAmendmentNote.js     … 補正の示唆・署名ブロックの書式変換
   formatBoilerplate.js       … 定型行整形（「記」／<引用文献等一覧>／ハイフン線など）
   paragraphExtraction.js     … 段落・図番号抽出
@@ -56,7 +54,7 @@ tools/
 
 ## 回帰テスト
 
-- `node tools/golden.js verify` … 全 8 モード × 13 fixture の変換結果を `tools/goldens/` とバイト単位で比較する
+- `node tools/golden.js verify` … 全 8 モード × 12 fixture の変換結果を `tools/goldens/` とバイト単位で比較する
 - `node tools/smoke.js` … 最小 DOM スタブでアプリを起動し、Convert / `Ctrl`+`Enter` / Copy の配線を確認する
 - 変換ルールを意図して変えたときだけ `node tools/golden.js capture` でゴールデンを更新し、diff をレビューする
 

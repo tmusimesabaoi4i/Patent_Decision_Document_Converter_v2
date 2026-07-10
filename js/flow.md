@@ -95,20 +95,19 @@ flowchart TD
 | 7 | `gap` | js/normalizeText.js | 各行の直後に空行を 1 行ずつ挿入し、行間を必ず 1 空行にする。 |
 | 8 | `lead` | js/normalizeText.js | 文字列先頭に改行を 1 つだけ付与する（既に先頭が改行なら何もしない）。 |
 
-### formatBody チェーン（8 関数）— `js/formatBody.js`
+### formatBody チェーン（7 関数）— `js/formatBody.js`
 
-本文の見出し・箇条書き・条文番号などの整形／全角化。定義: `register("formatBody", [replaceAbbreviations, padHead, trimHead, tightBelowBullet, fwHead, fwNumLaw, fwRefLaw, tightClaims])`。
+本文の見出し・箇条書き・条文番号などの整形／全角化。定義: `register("formatBody", [padHead, trimHead, tightBelowBullet, fwHead, fwNumLaw, fwRefLaw, tightClaims])`。
 
 | 順 | 関数 | 定義ファイル | 処理内容 |
 |---|---|---|---|
-| 1 | `replaceAbbreviations` | js/replaceAbbreviations.js | 空白/ハイフン/アンダースコア・大小を無視した最長一致で、通信系略語を正式表記へ置換（辞書は `telecomAbbreviations.js`）。 |
-| 2 | `padHead` | js/formatBody.js | 空行以外の各行の先頭に全角スペースを 1 個（既定）挿入する。 |
-| 3 | `trimHead` | js/formatBody.js | ドット箇条書き・見出しマーク・`<`/`-` で始まる行の行頭空白 1 個を条件付きで削除する。 |
-| 4 | `tightBelowBullet` | js/formatBody.js | 箇条書き行（ドット/見出し/`-`/`<`）の直下が空行なら、その空行を 1 行だけ詰める。 |
-| 5 | `fwHead` | js/formatBody.js | 行頭の見出しマークを全角化し、さらに `●`/`・` で始まる行を行全体全角化（内部で `fwLineStartsWithBlackDot` / `fwLineStartsWithSmallDot` を使用）。 |
-| 6 | `fwNumLaw` | js/formatBody.js | 「第◯条第◯項第◯号」「令和/平成の日付」「請求項/段落/図」等の番号を全角化する（条文・参照番号系）。 |
-| 7 | `fwRefLaw` | js/formatBody.js | 「表◯」などの参照番号列を数字開始のときだけ全角化（「特表」は除外し誤変換を防止）。 |
-| 8 | `tightClaims` | js/stripBlankLines.js | `『』` で囲まれた範囲内の空白行を削除する（`formatBody` チェーンから利用されるが、定義自体は `stripBlankLines.js`）。 |
+| 1 | `padHead` | js/formatBody.js | 空行以外の各行の先頭に全角スペースを 1 個（既定）挿入する。 |
+| 2 | `trimHead` | js/formatBody.js | ドット箇条書き・見出しマーク・`<`/`-` で始まる行の行頭空白 1 個を条件付きで削除する。 |
+| 3 | `tightBelowBullet` | js/formatBody.js | 箇条書き行（ドット/見出し/`-`/`<`）の直下が空行なら、その空行を 1 行だけ詰める。 |
+| 4 | `fwHead` | js/formatBody.js | 行頭の見出しマークを全角化し、さらに `●`/`・` で始まる行を行全体全角化（内部で `fwLineStartsWithBlackDot` / `fwLineStartsWithSmallDot` を使用）。 |
+| 5 | `fwNumLaw` | js/formatBody.js | 「第◯条第◯項第◯号」「令和/平成の日付」「請求項/段落/図」等の番号を全角化する（条文・参照番号系）。 |
+| 6 | `fwRefLaw` | js/formatBody.js | 「表◯」などの参照番号列を数字開始のときだけ全角化（「特表」は除外し誤変換を防止）。 |
+| 7 | `tightClaims` | js/stripBlankLines.js | `『』` で囲まれた範囲内の空白行を削除する（`formatBody` チェーンから利用されるが、定義自体は `stripBlankLines.js`）。 |
 
 ### stripBlankLines チェーン（7 関数）— `js/stripBlankLines.js`
 
@@ -124,9 +123,9 @@ flowchart TD
 | 6 | `stripBlankLinesInAmendmentSuggestion` | js/stripBlankLines.js | 「<補正の示唆>」〜「なお、上記の補正の示唆は…出願人が決定すべきものである。」の範囲内の空行を削除。 |
 | 7 | `stripBlankLinesInAddedNewMatter` | js/stripBlankLines.js | 「例えば、請求項１は、」〜「」と認める。」の範囲内の空行を削除。 |
 
-### formatTail チェーン（5 関数）— `js/formatSearchResult.js` / `js/formatAmendmentNote.js` / `js/formatBoilerplate.js` / `js/replaceAbbreviations.js`
+### formatTail チェーン（4 関数）— `js/formatSearchResult.js` / `js/formatAmendmentNote.js` / `js/formatBoilerplate.js`
 
-文書末尾ブロック（調査結果・ファミリー情報・補正の示唆・署名など）の書式変換と略語再適用。定義: `register("formatTail", [formatSearchResultBlock, formatFamilyInfoBlock, formatAmendmentNoteBlock, formatBoilerplateLines, replaceAbbreviations])`。
+文書末尾ブロック（調査結果・ファミリー情報・補正の示唆・署名など）の書式変換。定義: `register("formatTail", [formatSearchResultBlock, formatFamilyInfoBlock, formatAmendmentNoteBlock, formatBoilerplateLines])`。
 
 | 順 | 関数 | 定義ファイル | 処理内容 |
 |---|---|---|---|
@@ -134,9 +133,6 @@ flowchart TD
 | 2 | `formatFamilyInfoBlock` | js/formatSearchResult.js | 「<ファミリー文献情報>」〜問合せ文の間を行単位で整形（番号行はそのまま、本文行は全角スペース 3 個インデント＋英数字半角化）。 |
 | 3 | `formatAmendmentNoteBlock` | js/formatAmendmentNote.js | 「<補正をする際の注意>」以降を対象に、＜補正の示唆＞の番号行・＜ファミリー文献情報＞ブロックを状態遷移で判定しつつ行単位整形（`formatAmendmentNoteTail`）。 |
 | 4 | `formatBoilerplateLines` | js/formatBoilerplate.js | 「記」「<引用文献等一覧>」「区切りハイフン線」等の定型行を所定レイアウトへ置換し、最後に残った `<`/`>` を全角に変換。 |
-| 5 | `replaceAbbreviations` | js/replaceAbbreviations.js | 略語辞書による正式表記置換を末尾でもう一度適用（このフルパイプラインでは `formatBody` 先頭に続く 2 回目の適用）。 |
-
-> 注: フルパイプライン（例: `officeAction`）では `replaceAbbreviations` が **2 回**通過します。1 回目は `formatBody` チェーンの先頭、2 回目は `formatTail` チェーンの末尾です。
 
 ### formatBoilerplate チェーン（1 関数）— `js/formatBoilerplate.js`
 
@@ -197,7 +193,3 @@ Copy ボタン（または `Alt`+`Enter`）は `AppCore._handleCopy`（`js/app.j
 ### FilterRegistry（`filterRegistry/filterRegistry.js`）
 
 名前付きフィルタチェーンを管理・実行する汎用基盤クラス。`register(name, fnList, options)` でチェーンを登録し、`apply(name, str, invokeArgs)` で適用します。実行本体の `_runPipeline` は、各ステップを `[current, ...step.args, ...invokeArgs]` の引数で登録順にシーケンシャル実行し、同期/非同期の戻り値を吸収して常に `Promise<string>` を返します。`beforeApply` / `afterApply` / `onError` フック、`stopOnError`（既定 true）による中断制御、ステップの `insert` / `removeAt` / `enable` などの編集 API を備えます。本アプリでは `js/filterChains.js` が単一インスタンス `filterChains` を生成し、全チェーンを登録しています。
-
-### telecomAbbreviations.js（略語辞書データ）
-
-通信・3GPP 系の略語置換辞書（`root.telecomAbbreviations`）。ロジックを持たない純データで、`replaceMap`（通常マップ）・`conditionalShortMap`（境界必須の短語）・`boundarySensitiveKeys` を公開します。`replaceAbbreviations.js` がモジュール読み込み時にこの辞書を正規化して最長一致用の Trie を一度だけ構築し、`replaceAbbreviations` がその事前構築済みの Trie を使って空白/ハイフン/アンダースコア・大小を無視した置換を行います。
