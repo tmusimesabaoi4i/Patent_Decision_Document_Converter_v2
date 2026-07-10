@@ -701,53 +701,6 @@
   }
 
   // ======================================================================
-  // 7. 『』内の空白行削除
-  // ======================================================================
-
-  /**
-   * 開始～終了マーカーに挟まれた範囲の空白行を削除（簡易）
-   * @param {string} str
-   * @param {string|string[]} startMarker
-   * @param {string|string[]} endMarker
-   * @returns {string}
-   */
-  function stripBlankLinesBetween(str, startMarker, endMarker) {
-    if (str == null || str === "") return "";
-    var s = String(str);
-
-    var starts = Array.isArray(startMarker) ? startMarker : [startMarker];
-    var ends = Array.isArray(endMarker) ? endMarker : [endMarker];
-
-    var result = s;
-
-    for (var i = 0; i < starts.length; i++) {
-      for (var j = 0; j < ends.length; j++) {
-        var pattern = new RegExp("(" + escapeRegExp(starts[i]) + ")([\\s\\S]*?)(" + escapeRegExp(ends[j]) + ")", "g");
-        result = result.replace(pattern, function (_all, pre, inner, post) {
-          var innerLines = splitLines(inner);
-          var outLines = [];
-          for (var k = 0; k < innerLines.length; k++) {
-            if (!isBlankLine(innerLines[k])) outLines.push(innerLines[k]);
-          }
-          return pre + joinLines(outLines).trim() + post;
-        });
-      }
-    }
-
-    return result;
-  }
-
-  /**
-   * 『...』内の空白行を削除
-   * @param {string} str
-   * @returns {string}
-   */
-  function tightClaims(str) {
-    if (str == null || str === "") return "";
-    return stripBlankLinesBetween(String(str), "『", "』");
-  }
-
-  // ======================================================================
   // 公開
   // ======================================================================
 
@@ -762,9 +715,6 @@
     // 全角化・番号処理
     fwHead: fwHead,
     fwNumLaw: fwNumLaw,
-    fwRefLaw: fwRefLaw,
-
-    // 行構造
-    tightClaims: tightClaims
+    fwRefLaw: fwRefLaw
   };
 })(globalThis);

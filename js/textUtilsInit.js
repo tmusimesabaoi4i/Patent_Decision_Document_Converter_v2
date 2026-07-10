@@ -20,68 +20,15 @@
   // 個別ユーティリティ関数
   // ========================================================================
 
-  /**
-   * 改行コードを統一する
-   *
-   * - CRLF ("\r\n"), CR ("\r"), LF ("\n") のすべてを "\n" に統一する。
-   * - 空文字列や null / undefined が渡された場合は空文字列を返す。
-   * - 既に "\n" のみで構成されている場合はほぼそのまま返るためコストは低い。
-   *
-   * @param {string} str 入力文字列
-   * @returns {string} 改行コードを "\n" に正規化した文字列
-   */
-  function nl(str) {
-    if (str == null || str === "") return "";
-    const s = String(str);
-    // \r\n または単体 \r をすべて \n に統一
-    return s.replace(/\r\n?/g, "\n");
+  // 改行正規化 nl と半角化 hw は textUtilsStd と実装が同一だったため委譲する。
+  const textUtilsStd = root.textUtilsStd;
+  if (!textUtilsStd) {
+    // eslint-disable-next-line no-console
+    console.warn("textUtilsInit.js: root.textUtilsStd が見つかりません。textUtilsStd.js を先に読み込んでください。");
+    return;
   }
-
-  /**
-   * 全角を半角へ変換する
-   *
-   * - 可能であれば Unicode NFKC 正規化を用いて、全角英数字・記号などを半角へ寄せる。
-   * - その後、全角スペース (U+3000) を半角スペース " " に変換する。
-   * - NFKC により一部のカナや結合文字が変形・結合される可能性があることに注意。
-   *   （例: 一部の濁点付き文字が 1 文字に統合される等）
-   * - 正規化が利用できない環境でも、ASCII 全角 (U+FF01〜U+FF5E) と全角スペースを
-   *   手動で半角へ変換するフォールバックを行う。
-   *
-   * @param {string} str 入力文字列
-   * @returns {string} 半角化された文字列
-   */
-  function hw(str) {
-    if (str == null || str === "") return "";
-    let s = String(str);
-
-    // NFKC 正規化（可能であれば実施）
-    if (typeof s.normalize === "function") {
-      try {
-        s = s.normalize("NFKC");
-      } catch (_e) {
-        // normalize が失敗した場合はフォールバックのみで対応
-      }
-    }
-
-    // ここで改めて全角 ASCII / 数字 / 全角スペースを手動変換
-    const FW_START = 0xff01; // 全角 '！'
-    const FW_END = 0xff5e; // 全角 '～'
-    const FW_SPACE = 0x3000; // 全角スペース
-    const OFFSET = 0xfee0;
-
-    let out = "";
-    for (const ch of s) {
-      const code = ch.charCodeAt(0);
-      if (code === FW_SPACE) {
-        out += " ";
-      } else if (code >= FW_START && code <= FW_END) {
-        out += String.fromCharCode(code - OFFSET);
-      } else {
-        out += ch;
-      }
-    }
-    return out;
-  }
+  const nl = textUtilsStd.nl;
+  const hw = textUtilsStd.hw;
 
   /**
    * 特殊文字・制御文字を除去する

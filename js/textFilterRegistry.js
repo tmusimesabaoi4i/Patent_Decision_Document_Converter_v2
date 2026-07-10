@@ -100,7 +100,6 @@
   var fwHead = TextLib_Main.fwHead;
   var fwNumLaw = TextLib_Main.fwNumLaw;
   var fwRefLaw = TextLib_Main.fwRefLaw;
-  var tightClaims = TextLib_Main.tightClaims;
 
   /**
    * stripBlankLines 側のユーティリティオブジェクトを取得
@@ -121,7 +120,8 @@
   var stripBlankLinesInAppendix = TextLib_BlankLines.stripBlankLinesInAppendix;
   var stripBlankLinesInPriority = TextLib_BlankLines.stripBlankLinesInPriority;
   var stripBlankLinesInAmendmentSuggestion = TextLib_BlankLines.stripBlankLinesInAmendmentSuggestion;
-  var stripBlankLinesInAddedNewMatter = TextLib_BlankLines.stripBlankLinesInAddedNewMatter
+  var stripBlankLinesInAddedNewMatter = TextLib_BlankLines.stripBlankLinesInAddedNewMatter;
+  var tightClaims = TextLib_BlankLines.tightClaims;
 
   // どれか 1 つでも欠けている場合は警告を出して終了
   if (
@@ -130,10 +130,11 @@
     typeof stripBlankLinesInCitation !== "function" ||
     typeof stripBlankLinesInAppendix !== "function" ||
     typeof stripBlankLinesInPriority !== "function" ||
-    typeof stripBlankLinesInAmendmentSuggestion !== "function"
+    typeof stripBlankLinesInAmendmentSuggestion !== "function" ||
+    typeof stripBlankLinesInAddedNewMatter !== "function"
   ) {
     // eslint-disable-next-line no-console
-    console.warn("stripBlankLinesInCorrectionNote, stripBlankLinesInSearchResult, stripBlankLinesInCitation, stripBlankLinesInAppendix, stripBlankLinesInPriority, stripBlankLinesInAmendmentSuggestion のいずれかが定義されていません。stripBlankLines.js を確認してください。");
+    console.warn("stripBlankLinesInCorrectionNote, stripBlankLinesInSearchResult, stripBlankLinesInCitation, stripBlankLinesInAppendix, stripBlankLinesInPriority, stripBlankLinesInAmendmentSuggestion, stripBlankLinesInAddedNewMatter のいずれかが定義されていません。stripBlankLines.js を確認してください。");
     return;
   }
 
@@ -164,10 +165,33 @@
   // 必要なフィルタ関数を取り出す
   var convertForDoc = TextLib_ConvertForDoc.convertForDoc;
   var convertForFamily = TextLib_ConvertForDoc.convertForFamily;
-  // 必要なフィルタ関数を取り出す
   var convertForCau = TextLib_ConvertForCau.convertForCau;
-  var convertForOther = TextLib_ConvertForCau.convertForOther;
-  var applyFlexibleMap = TextLib_ConvertForCau.applyFlexibleMap;
+
+  /**
+   * replaceAbbreviations（略語置換エンジン）を取得
+   */
+  var Lib_ReplaceAbbreviations = root.replaceAbbreviations || null;
+
+  if (!Lib_ReplaceAbbreviations) {
+    // eslint-disable-next-line no-console
+    console.warn("replaceAbbreviations が見つかりません。replaceAbbreviations.js の中でグローバル名を確認してください。");
+    return;
+  }
+
+  var applyFlexibleMap = Lib_ReplaceAbbreviations.applyFlexibleMap;
+
+  /**
+   * formatBoilerplate（定型行整形）を取得
+   */
+  var Lib_FormatBoilerplate = root.formatBoilerplate || null;
+
+  if (!Lib_FormatBoilerplate) {
+    // eslint-disable-next-line no-console
+    console.warn("formatBoilerplate が見つかりません。formatBoilerplate.js の中でグローバル名を確認してください。");
+    return;
+  }
+
+  var convertForOther = Lib_FormatBoilerplate.convertForOther;
 
   var paragraphExtraction = root.paragraphExtraction || null;
   var makeHtml = root.makeHtml || null;
