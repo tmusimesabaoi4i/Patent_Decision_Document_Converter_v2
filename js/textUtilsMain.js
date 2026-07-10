@@ -644,23 +644,8 @@
       }
     );
 
-    // 改良が必要
-    // // キーワード後続番号列：先頭が数字で始まる列のみ（WPA-PSK 等を誤爆させない）
-    // // -------------------------------
-    // // 共通定義
-    // // -------------------------------
-    // var KEYWORDS_REF_NC   = "(?:引用文献|文献|段落|図|式)";
-    // var KEYWORDS_CLAIM_NC = "(?:相違点|主張|上記|前記|記載|請求項)";
-    // var PARTICLE = "(?:は|が|を|に|へ|と|で|の|から|まで|より)";
-
-    // var DIG   = "[0-9０-９]";
-    // var ALPHA = "[A-Za-zＡ-Ｚａ-ｚ]";
-
     s = repKW(s,["引用文献", "文献", "相違点", "主張", "理由","構成"],
       kw("[0-9]+","","","[、]|[-]|及び|又は"),fwAlnum);
-
-    // s = repKW(s,["D"],
-    //   kw("[0-9]+","","","[,]|[、]|[-]|及び|又は"),fwAlnum);
 
     s = repKW(s,["請求項", "前記", "上記", "記載"],
       kw("[0-9]+","\\(","\\)","[、]|[-]|[\\(\\)]|及び|又は"),fwAlnum);
@@ -812,12 +797,6 @@
       return kw + sep2 + fwAlnum(removeWS(tail));
     });
 
-    // // 図/式/段落
-    // var reOther = new RegExp("(図|式|段落)([\\s\\u3000:：]*?)" + TAIL, "g");
-    // s = s.replace(reOther, function (_all, kw2, sep3, tail2) {
-    //   return kw2 + sep3 + fwAlnum(removeWS(tail2));
-    // });
-
     return s;
   }
 
@@ -841,26 +820,6 @@
         return c0.toUpperCase() + word.slice(1);
       });
     }, KEEP_TECH_RE_LIST);
-  }
-
-  // ======================================================================
-  // 7. 空行削除（※圧縮ではなく “全削除”）
-  // ======================================================================
-
-  /**
-   * 空行（空白のみ行を含む）をすべて削除する
-   * @param {string} str
-   * @returns {string}
-   */
-  function tightLines(str) {
-    if (str == null || str === "") return "";
-    var lines = splitLines(String(str));
-    var out = [];
-    for (var i = 0; i < lines.length; i++) {
-      if (isBlankLine(lines[i])) continue;
-      out.push(lines[i]);
-    }
-    return joinLines(out);
   }
 
   // ======================================================================
@@ -933,10 +892,8 @@
 
     // 大小変換（技術トークン保護あり）
     alphaCase: alphaCase,
-    // alphaCase: alphaCase,　PCT ENGの場合は消す。
 
     // 行構造
-    tightLines: tightLines,
     tightClaims: tightClaims
   };
 })(globalThis);

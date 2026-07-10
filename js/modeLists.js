@@ -77,11 +77,7 @@
         //   - 将来 "exp1", "exp2", "exp3" ... を足したい場合は
         //     下記配列に名前を追加するだけでよい。
         // -------------------------------------------------------------
-        // 例: var names = ["init", "exp1", "exp2"];
         var names = ["init", "main", "stripBlankLines", "convertEnd"];
-        // var names = ["init", "main", "stripBlankLines"];
-        // var names = ["init", "main"];
-        // var names = ["init"];
 
         // -------------------------------------------------------------
         // 複数パイプラインを順に実行
@@ -130,7 +126,6 @@
           return text;
         }
 
-        // var names = ["init", "main", "stripBlankLines", "convertEnd"];
         var names = ["init", "main", "stripBlankLines", "finalAction"];
 
         return root

@@ -128,47 +128,6 @@
     return result;
   }
 
-  function stripBetween_Keep(str, startMarker, endMarker) {
-    if (str == null || str === "") return "";
-    const s = String(str);
-    const starts = Array.isArray(startMarker) ? startMarker : [startMarker];
-    const ends = Array.isArray(endMarker) ? endMarker : [endMarker];
-    const escapeRegExp = (text) => String(text).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
-    let result = s;
-    for (const start of starts) {
-      for (const end of ends) {
-        const pattern = new RegExp(`(${escapeRegExp(start)})([\\s\\S]*?)(${escapeRegExp(end)})`, "g");
-        result = result.replace(pattern, (_all, pre, inner, post) => {
-          const innerLines = splitLines(inner);
-          const outLines = innerLines.filter((line) => !isBlankLine(line));
-          return pre + joinLines(outLines) + post;
-        });
-      }
-    }
-    return result;
-  }
-
-
-  /**
-   * 「<補正をする際の注意>」から
-   * 「(上記「●●●●」に置き換えて、「PA5J」と入力ください。)」までの
-   * 範囲に含まれる空白行を削除します。
-   *
-   * @param {string} str 入力文字列
-   * @returns {string} 該当範囲の空白行が削除された文字列
-   */
-  function stripBlankLinesInCorrectionNote(str) {
-    if (str == null || str === "") return "";
-    const s = String(str);
-
-    const startMarker = "<補正をする際の注意>";
-    const endMarker =
-      "(上記「●●●●」に置き換えて、「PA5J」と入力ください。)";
-
-    return stripBetween_L(s, startMarker, endMarker);
-  }
-
   /**
    * 「<補正をする際の注意>」から
    * 「(上記「●●●●」に置き換えて、「PA5J」と入力ください。)」までの

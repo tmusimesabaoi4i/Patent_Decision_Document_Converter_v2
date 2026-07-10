@@ -18,8 +18,6 @@
  *       "init" という名前のフィルタリストを 1 つ登録済みの FilterRegistry インスタンス。
  *   - root.runTextChains(names, str, ...)
  *       複数のフィルタリストを順番に実行する汎用ヘルパ。
- *   - root.runInitFilters(str, ...)
- *       "init" パイプライン専用の簡易ヘルパ。
  *
  * ▼ 使い方（例）
  *   const input = "  ほげ\r\nふが  ";
@@ -278,17 +276,6 @@
     tightClaims,
   ]);
 
-  textFilterRegistry.register("main_html", [
-    padHead,
-    trimHead,
-    tightBelowBullet, // 下の改行を詰める(箇条書き系は全角になると反応しないので、)
-    fwHead,
-    fwNumLaw,
-    fwRefLaw,
-    alphaCase, // 表とか図の英字を大文字にしない
-    tightClaims,
-  ]);
-
   textFilterRegistry.register("main_PCTENG", [
     applyFlexibleMap,
     padHead,
@@ -404,16 +391,5 @@
     });
 
     return chain;
-  };
-
-  /**
-   * "init" だけを実行したい場合のショートカット
-   *
-   * @param {string} str 入力文字列
-   * @param {any[]} [invokeArgs] 追加引数（通常は不要）
-   * @returns {Promise<string>} 変換後の文字列
-   */
-  root.runInitFilters = function (str, invokeArgs) {
-    return textFilterRegistry.apply("init", str, invokeArgs);
   };
 })(globalThis);

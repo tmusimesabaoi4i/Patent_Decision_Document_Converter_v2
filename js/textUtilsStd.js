@@ -379,49 +379,6 @@
     }
 
     /**
-     * 文字列中の「変換可能な全ての文字」を半角に変換する。
-     *
-     * - 仕様は質問にある hw 関数と同じ方針：
-     *   - まず Unicode NFKC 正規化で互換文字を可能な範囲で半角側へ寄せる。
-     *   - その後、全角 ASCII（'！'〜'～'）と全角スペースを明示的に半角へ変換。
-     * - カナなど一部の文字は NFKC により形が変わる／結合される点に注意。
-     *
-     * @param {string} str 入力文字列
-     * @returns {string} 可能な限り半角に寄せた文字列
-     */
-    function hw(str) {
-    if (str == null || str === "") return "";
-    let s = String(str);
-
-    // NFKC 正規化（利用可能な環境のみ）
-    if (typeof s.normalize === "function") {
-        try {
-        s = s.normalize("NFKC");
-        } catch (_e) {
-        // normalize が失敗した場合はフォールバックのみで対応
-        }
-    }
-
-    const FW_START = 0xff01; // 全角 '！'
-    const FW_END = 0xff5e;   // 全角 '～'
-
-    let out = "";
-    for (const ch of s) {
-        const code = ch.charCodeAt(0);
-        if (code === FW_SPACE) {
-        // 全角スペース → 半角スペース
-        out += " ";
-        } else if (code >= FW_START && code <= FW_END) {
-        // 全角 ASCII → 半角 ASCII
-        out += String.fromCharCode(code - FW_OFFSET);
-        } else {
-        out += ch;
-        }
-    }
-    return out;
-    }
-
-    /**
      * 改行コードを統一する
      *
      * - CRLF ("\r\n"), CR ("\r"), LF ("\n") のすべてを "\n" に統一する。
@@ -490,16 +447,10 @@
      * @returns {string[]}
      */
     function splitLines(str) {
-        // str = nl(ss(str));
         return String(str).split(/\r\n|\r|\n/);
     }
 
-    function ss(str){ if (str == null || str === "") return [""]; }
-
-    // 基本  // str = nl(ss(str)); // 初期化
-
   root.Std = {
-    ss: ss,                     // 初期化
     nl: nl,                     // 改行コードを統一する
     joinLines: joinLines,       // 配列化を \n で結合して文字列に戻す
     splitLines: splitLines,     // すべての改行コード (\r\n, \r, \n) を \n に正規化して配列化

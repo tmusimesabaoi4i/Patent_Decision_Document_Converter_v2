@@ -554,13 +554,10 @@
       return raw;
     });
 
+    // （句読点正規化のフックがここにあったが、恒等変換だったため削除）
     return joinLines(outLines)
       .replace(/[<>]/g, function (c) {
         return c === "<" ? "＜" : "＞";
-      })
-      .replace(/[、。]/g, function (c) {
-        // 将来ここで句読点の正規化をしたくなったら書き換え
-        return c === "、" ? "、" : "。";
       });
   }
 
