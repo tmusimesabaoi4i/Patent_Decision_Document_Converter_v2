@@ -1,0 +1,273 @@
+<!-- https://www.j-platpat.inpit.go.jp/c1801/PU/JP-2001-190010/11/ja -->
+ <!-- US20210123456 -->
+  <!-- WO2022057009 -->
+   <!-- CN106664607 -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <!--
+    Patent Decision Document Converter
+    - Production HTML
+    - Styles in ./css/base.css, ./css/layout.css, ./css/components.css, ./css/modal.css
+    - Logic in ./js/app.js
+  -->
+  <title>Patent Decision Document Converter</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/layout.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/modal.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <div class="app-header-main">
+        <h1 class="app-title">
+          Patent Decision Document Converter
+        </h1>
+        <p class="app-subtitle">
+          Normalize and transform Office Actions, Final Rejections, Amendment Refusals, Pre-examination Reports, and PCT documents.
+        </p>
+      </div>
+      <div class="app-header-meta">
+        <span class="app-tag">Step-by-step · Internal tool</span>
+      </div>
+    </header>
+
+    <main class="app-main" aria-label="Patent decision document converter tool">
+      <!-- Mode Selection -->
+      <section class="panel panel-modes" aria-labelledby="mode-heading">
+        <div class="panel-heading">
+          <h2 id="mode-heading" class="panel-title">Step 1 · Mode</h2>
+          <p class="panel-subtitle">Choose the document type; the converter will apply its optimized rule set.</p>
+        </div>
+
+        <fieldset class="mode-group" role="radiogroup" aria-label="Patent decision document type">
+          <legend class="sr-only">Select conversion mode</legend>
+
+          <label class="mode-pill">
+            <input
+              class="mode-input"
+              type="radio"
+              name="mode"
+              value="officeAction"
+              checked
+            />
+            <span class="mode-pill-indicator" aria-hidden="true"></span>
+            <span class="mode-pill-label">
+              <span class="mode-pill-title">Office Action</span>
+              <span class="mode-pill-desc">Non-final office action</span>
+            </span>
+          </label>
+
+          <label class="mode-pill">
+            <input
+              class="mode-input"
+              type="radio"
+              name="mode"
+              value="finalOfficeAction"
+            />
+            <span class="mode-pill-indicator" aria-hidden="true"></span>
+            <span class="mode-pill-label">
+              <span class="mode-pill-title">Final Office Action</span>
+              <span class="mode-pill-desc">Final rejection</span>
+            </span>
+          </label>
+
+          <label class="mode-pill">
+            <input
+              class="mode-input"
+              type="radio"
+              name="mode"
+              value="amendmentRefused"
+            />
+            <span class="mode-pill-indicator" aria-hidden="true"></span>
+            <span class="mode-pill-label">
+              <span class="mode-pill-title">Amendment Refused</span>
+              <span class="mode-pill-desc">Amendment not entered</span>
+            </span>
+          </label>
+
+          <label class="mode-pill">
+            <input
+              class="mode-input"
+              type="radio"
+              name="mode"
+              value="preExaminationReport"
+            />
+            <span class="mode-pill-indicator" aria-hidden="true"></span>
+            <span class="mode-pill-label">
+              <span class="mode-pill-title">Pre-examination Report</span>
+              <span class="mode-pill-desc">Report to director</span>
+            </span>
+          </label>
+
+          <label class="mode-pill">
+            <input
+              class="mode-input"
+              type="radio"
+              name="mode"
+              value="pct"
+            />
+            <span class="mode-pill-indicator" aria-hidden="true"></span>
+            <span class="mode-pill-label">
+              <span class="mode-pill-title">PCT</span>
+              <span class="mode-pill-desc">International application</span>
+            </span>
+          </label>
+          
+          <label class="mode-pill">
+            <input
+              class="mode-input"
+              type="radio"
+              name="mode"
+              value="pct_eng"
+            />
+            <span class="mode-pill-indicator" aria-hidden="true"></span>
+            <span class="mode-pill-label">
+              <span class="mode-pill-title">PCT (English)</span>
+              <span class="mode-pill-desc">International application (English text)</span>
+            </span>
+          </label>
+
+          <label class="mode-pill">
+            <input
+              class="mode-input"
+              type="radio"
+              name="mode"
+              value="paragraph"
+            />
+            <span class="mode-pill-indicator" aria-hidden="true"></span>
+            <span class="mode-pill-label">
+              <span class="mode-pill-title">Paragraphs</span>
+              <span class="mode-pill-desc">Convert paragraphs</span>
+            </span>
+          </label>
+
+          <label class="mode-pill">
+            <input
+              class="mode-input"
+              type="radio"
+              name="mode"
+              value="html"
+            />
+            <span class="mode-pill-indicator" aria-hidden="true"></span>
+            <span class="mode-pill-label">
+              <span class="mode-pill-title">to HTML</span>
+              <span class="mode-pill-desc">Convert to HTML</span>
+            </span>
+          </label>
+        </fieldset>
+      </section>
+
+
+      <!-- Input / Output -->
+      <section class="panel panel-io" aria-labelledby="io-heading">
+        <div class="panel-heading">
+          <h2 id="io-heading" class="panel-title">Step 2 · Input &amp; Output</h2>
+          <p class="panel-subtitle">Paste the original document on the left; the converted result appears on the right.</p>
+        </div>
+
+        <div class="io-grid">
+          <!-- Input column -->
+          <div class="io-column">
+            <div class="io-label-row">
+              <label class="io-label" for="inputText">Input text</label>
+              <p class="io-hint" id="inputHint">Content is normalized to half-width before transformation.</p>
+            </div>
+            <textarea
+              id="inputText"
+              class="io-textarea"
+              placeholder="Paste the raw patent office document here."
+              aria-describedby="inputHint"
+            ></textarea>
+          </div>
+
+          <!-- Output column -->
+          <div class="io-column">
+            <div class="io-label-row">
+              <label class="io-label" for="outputText">Output text</label>
+              <p class="io-hint" id="outputHint">Converted result is shown here.</p>
+            </div>
+            <textarea
+              id="outputText"
+              class="io-textarea io-textarea--output"
+              placeholder="Converted text will appear here."
+              readonly
+              aria-describedby="outputHint"
+            ></textarea>
+          </div>
+        </div>
+      </section>
+
+      <!-- Actions -->
+      <section class="panel panel-actions" aria-labelledby="actions-heading">
+        <div class="panel-heading">
+          <h2 id="actions-heading" class="panel-title">Step 3 · Run &amp; Copy</h2>
+          <p class="panel-subtitle">Run the conversion, then copy the normalized text into your drafting tool.</p>
+        </div>
+
+        <div class="actions-row">
+          <div class="actions-buttons">
+            <button id="convertBtn" type="button" class="btn btn-primary">
+              <span aria-hidden="true">⚙️</span>
+              <span>Convert</span>
+            </button>
+
+            <button id="copyBtn" type="button" class="btn btn-secondary">
+              <span aria-hidden="true">📋</span>
+              <span>Copy output</span>
+            </button>
+          </div>
+
+          <div class="actions-meta">
+            <p class="actions-hint" id="shortcutHint">
+              <strong>Shortcuts:</strong>
+              <kbd>Ctrl</kbd> + <kbd>Enter</kbd>
+              (or <kbd>⌘</kbd> + <kbd>Enter</kbd> on Mac) – Convert /
+              <kbd>Alt</kbd> + <kbd>Enter</kbd> – Copy output.
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Toast -->
+  <div
+    id="toast"
+    class="toast"
+    role="status"
+    aria-live="polite"
+    aria-atomic="true"
+  >
+    <div class="toast-inner">
+      <div class="toast-header">
+        <span class="toast-icon" aria-hidden="true">✅</span>
+        <span class="toast-title" id="toastMessage">Copied</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="filterRegistry/filterRegistry.js"></script>
+  <script src="TextTransformer/TextTransformer.js"></script>
+
+  <script src="js/textUtilsStd.js"></script>
+  <script src="js/textUtilsInit.js"></script>
+  <script src="js/textUtilsMain.js"></script>
+  <script src="js/stripBlankLines.js"></script>
+  <script src="js/textUtilsConvertForDoc.js"></script>
+  <script src="js/textUtilsConvertForCau.js"></script>
+  <script src="js/paragraphExtraction.js"></script>
+  <script src="js/makeHtml.js"></script>
+  <script src="js/defaultTextFilters.js"></script>
+  <script src="js/modeLists.js"></script>
+
+  <!-- ★ 日本語タイポ検出＋モーダル表示ロジック -->
+  <script src="js/jaTypoChecker.js"></script>
+
+  <script src="js/app.js" defer></script>
+</body>
+</html>
