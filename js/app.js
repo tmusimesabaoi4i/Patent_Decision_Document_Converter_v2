@@ -19,13 +19,14 @@
  *   - AppCore:
  *       DOM 操作・イベント制御・変換パイプライン実行を担当する本体クラス。
  *
- *   - app（グローバルに公開されるファクトリ関数）:
+ *   - app（ファイル内部のファクトリ関数）:
  *       const a = app(); a.run();
  *       という形で App インスタンスを生成して起動する。
- *       本ファイル末尾で
- *         root.app = root.app();
- *         root.app.run();
- *       を実行しているため、通常は読み込みだけで自動起動される。
+ *       本ファイル末尾で app() を 1 回呼び、その「起動済みインスタンス」を
+ *       root.app に代入して run() している（root.app はファクトリではない）。
+ *       root.app は run / init / registerMode / registerModeList /
+ *       bootstrapModeLists / listModes / toHalfWidth を公開する。
+ *       通常は読み込みだけで自動起動される。
  *
  * ▼ モード（変換処理）の追加・変更方法
  *   - 基本パターン:
@@ -49,10 +50,11 @@
  *
  * ▼ 起動方法
  *   - 本ファイル末尾で
- *       root.app = root.app();
- *       root.app.run();
+ *       const appInstance = app();
+ *       root.app = appInstance;
+ *       appInstance.run();
  *     を実行しているため、通常は <script src="js/app.js"></script>
- *     を読み込むだけで自動起動します。
+ *     を読み込むだけで自動起動します（root.app は起動済みインスタンス）。
  *   - 別のインスタンスを試したい場合などは、app ファクトリを直接呼び出して
  *     使ってください。
  * ---------------------------------------------------------------------------
@@ -715,11 +717,10 @@
   // グローバル公開 & 自動起動
   // =========================================================
 
-  // グローバルにファクトリ関数を公開
-  root.app = app;
-
-  // 指定どおり、最後に app = app(); app.run() を実行
-  root.app = root.app();
-  root.app.run();
+  // アプリインスタンスを生成してグローバルへ公開し、起動する。
+  // （root.app はファクトリではなく「起動済みインスタンス」を指す）
+  const appInstance = app();
+  root.app = appInstance;
+  appInstance.run();
 
 })(globalThis);
