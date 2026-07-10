@@ -76,12 +76,14 @@ app.js                     → 自動起動
 | UI ラベル | モードキー | パイプライン |
 |---|---|---|
 | Office Action | `officeAction` | `normalize` → `formatBody` → `stripBlankLines` → `formatTail` |
+| Office Action (Tight) | `officeActionTight` | `normalize` → `formatBody` → `stripBlankLinesTight` → `formatTail` |
 | Final Office Action | `finalOfficeAction` | `normalize` → `formatBody` → `stripBlankLines` → `formatBoilerplate` |
 | PCT | `pct` | `normalize` → `formatBody` |
 | PCT (English) | `pct_eng` | `normalize` → `formatBody` |
 | Paragraphs | `paragraph` | `extractParagraphRefs` |
 | to HTML | `html` | `toHtml` |
 
+- Office Action (Tight) は Office Action と同じ構成で、3 段目だけ `stripBlankLines` の代わりに `stripBlankLinesTight`（請求項ヘッダブロックの空行も詰める）を使う
 - Final Office Action だけ終端が `formatTail` ではなく `formatBoilerplate`
 - PCT 系は `stripBlankLines` / `formatTail` を通らない
 - Paragraphs / to HTML は `normalize` を通らない
@@ -97,6 +99,7 @@ app.js                     → 自動起動
 | `normalize` | 改行統一・半角化・制御文字除去・空行削除・行間正規化 | `normalizeText`（`nl`/`hw` は `textPrimitives`） |
 | `formatBody` | 見出し整形・全角化・クレーム詰めなど | `formatBody`, `stripBlankLines`（`tightClaims`） |
 | `stripBlankLines` | セクション別の空行削除 | `stripBlankLines` |
+| `stripBlankLinesTight` | `stripBlankLines` の全処理 + 請求項ヘッダブロック内の空行削除 | `stripBlankLines` |
 | `formatTail` | 文書末尾の書式変換 | `formatSearchResult`, `formatAmendmentNote`, `formatBoilerplate` |
 | `formatBoilerplate` | 最終拒絶向け末尾処理 | `formatBoilerplate` |
 | `extractParagraphRefs` | 段落・図番号の抽出 | `paragraphExtraction` |
@@ -120,7 +123,7 @@ app.js                     → 自動起動
 |---|---|
 | 前処理（改行・半角化・空行） | `normalizeText.js` / `normalize` 登録 |
 | 本文整形ルール | `formatBody.js` / `formatBody` 登録 |
-| ブロック内空行削除 | `stripBlankLines.js` |
+| ブロック内空行削除 | `stripBlankLines.js` / `stripBlankLines` 登録・`stripBlankLinesTight` 登録 |
 | 末尾書式変換（調査結果・ファミリー情報） | `formatSearchResult.js` |
 | 末尾書式変換（補正の示唆・署名） | `formatAmendmentNote.js` |
 | 定型行を追加（「記」／<引用文献等一覧>／ハイフン線など） | `formatBoilerplate.js` |

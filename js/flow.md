@@ -14,9 +14,9 @@ Convert / Copy の入り口から、モードハンドラ → フィルタチェ
 | 変換ショートカット | `Ctrl`+`Enter` / `⌘`+`Enter`（入力/出力テキストエリア上） | 変換パイプライン実行（Convert と同じ） | `AppCore._handleConvert`（`js/app.js`） |
 | Copy ボタン | `#copyBtn` の click | 出力テキストをクリップボードへコピー | `AppCore._handleCopy`（`js/app.js`） |
 | コピーショートカット | `Alt`+`Enter`（入力/出力テキストエリア上） | 出力テキストをコピー（Copy と同じ） | `AppCore._handleCopy`（`js/app.js`） |
-| モードラジオ（6 種） | `input[name="mode"]` の選択 | それ自体では何も実行しない。Convert 実行時に `_getSelectedModeKey` が現在の選択値を参照するだけ | （変換時に参照される） |
+| モードラジオ（7 種） | `input[name="mode"]` の選択 | それ自体では何も実行しない。Convert 実行時に `_getSelectedModeKey` が現在の選択値を参照するだけ | （変換時に参照される） |
 
-※ モードラジオの `value`（`officeAction` / `finalOfficeAction` / `pct` / `pct_eng` / `paragraph` / `html`）が、そのままモードキーとして使われます。
+※ モードラジオの `value`（`officeAction` / `officeActionTight` / `finalOfficeAction` / `pct` / `pct_eng` / `paragraph` / `html`）が、そのままモードキーとして使われます。
 
 ---
 
@@ -60,6 +60,7 @@ flowchart TD
 | モード（`value`） | UI 名称 | 実行チェーン（この順） |
 |---|---|---|
 | `officeAction` | Office Action | `normalize` → `formatBody` → `stripBlankLines` → `formatTail` |
+| `officeActionTight` | Office Action (Tight) | `normalize` → `formatBody` → `stripBlankLinesTight` → `formatTail` |
 | `finalOfficeAction` | Final Office Action | `normalize` → `formatBody` → `stripBlankLines` → `formatBoilerplate` |
 | `pct` | PCT | `normalize` → `formatBody` |
 | `pct_eng` | PCT (English) | `normalize` → `formatBody` |
@@ -68,6 +69,7 @@ flowchart TD
 
 補足:
 - `officeAction` は `normalize → formatBody → stripBlankLines → formatTail` を実行します。
+- `officeActionTight` と `officeAction` との違いは `stripBlankLinesTight`（請求項ヘッダブロックの空行も詰める）だけです。
 - `finalOfficeAction` は 4 段目だけが異なり `formatTail` の代わりに `formatBoilerplate`（`formatBoilerplateLines` のみ）を実行します。
 - `pct` は末尾の空行削除・末尾整形を行わず `normalize → formatBody` のみ。`pct_eng` は `pct` と同じ構成（`normalize → formatBody`）です。
 - `paragraph` / `html` は前処理（`normalize`）を通さず、専用の単一チェーンのみを実行します。
@@ -120,6 +122,16 @@ flowchart TD
 | 5 | `stripBlankLinesInPriority` | js/stripBlankLines.js | 「<優先権の主張の効果について>」〜「優先権の主張の効果が認められない。」の範囲内の空行を削除。 |
 | 6 | `stripBlankLinesInAmendmentSuggestion` | js/stripBlankLines.js | 「<補正の示唆>」〜「なお、上記の補正の示唆は…出願人が決定すべきものである。」の範囲内の空行を削除。 |
 | 7 | `stripBlankLinesInAddedNewMatter` | js/stripBlankLines.js | 「例えば、請求項１は、」〜「」と認める。」の範囲内の空行を削除。 |
+
+### stripBlankLinesTight チェーン（8 関数）— `js/stripBlankLines.js`
+
+`stripBlankLines` チェーンの全 7 関数に、8 番目として `stripBlankLinesInClaimsBlock` を追加したもの。`officeActionTight` モード専用。定義: `register("stripBlankLinesTight", [...])`。
+
+- 1〜7 は上記「stripBlankLines チェーン（7 関数）」と同一（`stripBlankLinesInCorrectionNote` 〜 `stripBlankLinesInAddedNewMatter`）。
+
+| 順 | 関数 | 定義ファイル | 処理内容（対象範囲） |
+|---|---|---|---|
+| 8 | `stripBlankLinesInClaimsBlock` | js/stripBlankLines.js | 「・請求項（／・引用文献等／・備考）」ヘッダ群から次の同型ヘッダ群までの本文の空行を削除し、直前に空行を1行残す。行頭一致（「・請求項　１－３」のような番号付きヘッダも対象）。終端は消費しない先読みで検出するため 3 ブロック以上連続していてもすべての間隙を処理する。最後のヘッダ群より後ろの本文は対象外。 |
 
 ### formatTail チェーン（4 関数）— `js/formatSearchResult.js` / `js/formatAmendmentNote.js` / `js/formatBoilerplate.js`
 
