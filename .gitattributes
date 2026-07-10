@@ -1,0 +1,3 @@
+# fixtures / goldens はバイト単位の回帰比較に使うため、EOL 変換を禁止する
+tools/fixtures/** -text
+tools/goldens/** -text
