@@ -122,6 +122,7 @@
   var stripBlankLinesInPriority = Lib_StripBlankLines.stripBlankLinesInPriority;
   var stripBlankLinesInAmendmentSuggestion = Lib_StripBlankLines.stripBlankLinesInAmendmentSuggestion;
   var stripBlankLinesInAddedNewMatter = Lib_StripBlankLines.stripBlankLinesInAddedNewMatter;
+  var stripBlankLinesInClaimsBlock = Lib_StripBlankLines.stripBlankLinesInClaimsBlock;
   var tightClaims = Lib_StripBlankLines.tightClaims;
 
   // どれか 1 つでも欠けている場合は警告を出して終了
@@ -293,6 +294,18 @@
     stripBlankLinesInPriority,
     stripBlankLinesInAmendmentSuggestion,
     stripBlankLinesInAddedNewMatter
+  ]);
+
+  // stripBlankLines の全処理 + 請求項ヘッダブロック内の空行詰め（officeActionTight 用）
+  filterChains.register("stripBlankLinesTight", [
+    stripBlankLinesInCorrectionNote,
+    stripBlankLinesInSearchResult,
+    stripBlankLinesInCitation,
+    stripBlankLinesInAppendix,
+    stripBlankLinesInPriority,
+    stripBlankLinesInAmendmentSuggestion,
+    stripBlankLinesInAddedNewMatter,
+    stripBlankLinesInClaimsBlock
   ]);
 
   filterChains.register("formatTail", [

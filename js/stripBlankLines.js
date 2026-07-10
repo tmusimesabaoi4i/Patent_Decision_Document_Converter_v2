@@ -9,7 +9,8 @@
  *       stripBlankLinesInCorrectionNote, stripBlankLinesInSearchResult,
  *       stripBlankLinesInCitation, stripBlankLinesInAppendix,
  *       stripBlankLinesInPriority, stripBlankLinesInAmendmentSuggestion,
- *       stripBlankLinesInAddedNewMatter, tightClaims
+ *       stripBlankLinesInAddedNewMatter, stripBlankLinesInClaimsBlock,
+ *       tightClaims
  *
  * ▼ 依存
  *   - root.textPrimitives（splitLines / joinLines / isBlankLine / escapeRegExp）
@@ -274,6 +275,58 @@
   }
 
   // ========================================================================
+  // 請求項ヘッダブロック内の空白行削除
+  // ========================================================================
+
+  /**
+   * 請求項ヘッダ群のパターン（正規表現ソース）
+   * - 行頭が「・請求項」で始まる行に、任意で「・引用文献等」で始まる行、
+   *   「・備考」で始まる行がこの順で続いたものを 1 つの「ヘッダ群」とみなす。
+   * - 行頭一致なので「・請求項　１－３」のように後ろに番号等が続いてもよい。
+   * @type {string}
+   */
+  var CLAIMS_HEADER_SRC =
+    "・請求項[^\\n]*(?:\\n・引用文献等[^\\n]*)?(?:\\n・備考[^\\n]*)?";
+
+  /**
+   * 請求項ヘッダ群（・請求項／・引用文献等／・備考）から
+   * 次の請求項ヘッダ群までの本文に含まれる空白行を削除します。
+   *
+   * - stripBetween と同じ「全文正規表現 + 空行フィルタ」構造を基礎とするが、
+   *   終端マーカー（次のヘッダ群）は同時に次ブロックの開始でもあるため、
+   *   消費しない先読み（lookahead）で検出する。これにより 3 ブロック以上
+   *   連続していても、すべての間隙が処理される。
+   * - 本文の空行を全て削除し、次のヘッダ群の直前に空行をちょうど 1 行残す。
+   * - 本文が空（ヘッダ群が隣接している等）の場合は何もしない。
+   * - 最後のヘッダ群より後ろ（閉じヘッダの無い本文）は対象外。
+   *
+   * @param {string} str 入力文字列
+   * @returns {string} 該当範囲の空白行が削除された文字列
+   */
+  function stripBlankLinesInClaimsBlock(str) {
+    if (str == null || str === "") return "";
+    var s = String(str);
+
+    // (ヘッダ群)(本文)(?=\n次のヘッダ群開始行)
+    var pattern = new RegExp(
+      "(^" + CLAIMS_HEADER_SRC + ")([\\s\\S]*?)(?=\\n・請求項)",
+      "gm"
+    );
+
+    return s.replace(pattern, function (_all, header, inner) {
+      var innerLines = splitLines(inner);
+      var outLines = [];
+      for (var i = 0; i < innerLines.length; i++) {
+        if (!isBlankLine(innerLines[i])) outLines.push(innerLines[i]);
+      }
+      // 本文が無い場合（ヘッダ群が隣接）は改変しない
+      if (outLines.length === 0) return header + inner;
+      // 末尾の "\n" は、残存する "\n・請求項" と合わせて空行 1 行になる
+      return header + "\n" + joinLines(outLines) + "\n";
+    });
+  }
+
+  // ========================================================================
   // グローバル公開
   // ========================================================================
 
@@ -292,6 +345,9 @@
     stripBlankLinesInPriority: stripBlankLinesInPriority,
     stripBlankLinesInAmendmentSuggestion: stripBlankLinesInAmendmentSuggestion,
     stripBlankLinesInAddedNewMatter: stripBlankLinesInAddedNewMatter,
+
+    // 請求項ヘッダブロック内の空白行削除（stripBlankLinesTight チェーン用）
+    stripBlankLinesInClaimsBlock: stripBlankLinesInClaimsBlock,
 
     // 『』内の空白行削除（本文整形チェーンから利用）
     tightClaims: tightClaims

@@ -1,0 +1,19 @@
+<div class="patent-text">
+<p class="patent-paragraph no-num">理由1(新規性)について</p>
+<p class="patent-paragraph no-num">・請求項 1-3・引用文献等 1-2・備考</p>
+<p class="patent-paragraph no-num">引用文献1には、無線通信システムの基地局が記載されている。</p>
+<p class="patent-paragraph no-num">引用文献2には、端末装置の構成が記載されている。</p>
+<p class="patent-paragraph no-num">したがって、請求項1-3に係る発明は新規性を欠く。</p>
+<p class="patent-paragraph no-num">・請求項 4・引用文献等 3</p>
+<p class="patent-paragraph no-num">引用文献3には、キャリアアグリゲーションが記載されている。</p>
+<p class="patent-paragraph no-num">したがって、請求項4に係る発明は新規性を欠く。</p>
+<p class="patent-paragraph no-num">・請求項 5・備考</p>
+<p class="patent-paragraph no-num">請求項5の記載は明確でない。</p>
+<p class="patent-paragraph no-num">よって、明確性要件を満たさない。</p>
+<p class="patent-paragraph no-num">・請求項 6</p>
+<p class="patent-paragraph no-num">請求項6についても同様である。</p>
+<p class="patent-paragraph no-num">以上のとおりである。</p>
+<p class="patent-paragraph no-num">・請求項 7・引用文献等 4・備考</p>
+<p class="patent-paragraph no-num">末尾のブロックの後ろは処理対象外である。</p>
+<p class="patent-paragraph no-num">以上</p>
+</div>

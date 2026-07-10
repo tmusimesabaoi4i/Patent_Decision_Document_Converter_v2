@@ -74,6 +74,8 @@
   const ModeFunctionLists = Object.freeze({
     // Office Action: 通常の拒絶理由通知
     officeAction: [makeChainModeHandler("officeAction", ["normalize", "formatBody", "stripBlankLines", "formatTail"])],
+    // Office Action (Tight): 請求項ヘッダブロック内の空行も詰める版
+    officeActionTight: [makeChainModeHandler("officeActionTight", ["normalize", "formatBody", "stripBlankLinesTight", "formatTail"])],
     // Final Office Action: 最後の拒絶理由通知 / Final Rejection
     finalOfficeAction: [makeChainModeHandler("finalOfficeAction", ["normalize", "formatBody", "stripBlankLines", "formatBoilerplate"])],
     // PCT: 国際出願
