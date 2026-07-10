@@ -54,13 +54,16 @@
    *   配列を渡した場合は、すべての組み合わせ（start × end）の範囲に対して処理します。
    * - 対象範囲外のテキストは変更しません。
    * - ネストしたマーカー構造や複雑な重なりには対応しない簡易実装です。
+   * - pad は整形後の本文とマーカーの間に改行を入れるかどうかの指定です。
+   *   （pad.before: 開始マーカー直後、pad.after: 終了マーカー直前）
    *
    * @param {string} str 入力文字列
    * @param {string|string[]} startMarker 範囲の開始を表すマーカー
    * @param {string|string[]} endMarker   範囲の終了を表すマーカー
+   * @param {{before: boolean, after: boolean}} pad 改行パディングの指定
    * @returns {string} 空白行のみが削除された文字列
    */
-  function stripBetween_L(str, startMarker, endMarker) {
+  function stripBetween(str, startMarker, endMarker, pad) {
     if (str == null || str === "") return "";
     const s = String(str);
     const starts = Array.isArray(startMarker) ? startMarker : [startMarker];
@@ -73,47 +76,7 @@
         result = result.replace(pattern, (_all, pre, inner, post) => {
           const innerLines = splitLines(inner);
           const outLines = innerLines.filter((line) => !isBlankLine(line));
-          return pre + "\n" + joinLines(outLines) + post;
-        });
-      }
-    }
-    return result;
-  }
-
-  function stripBetween_LR(str, startMarker, endMarker) {
-    if (str == null || str === "") return "";
-    const s = String(str);
-    const starts = Array.isArray(startMarker) ? startMarker : [startMarker];
-    const ends = Array.isArray(endMarker) ? endMarker : [endMarker];
-
-    let result = s;
-    for (const start of starts) {
-      for (const end of ends) {
-        const pattern = new RegExp(`(${escapeRegExp(start)})([\\s\\S]*?)(${escapeRegExp(end)})`, "g");
-        result = result.replace(pattern, (_all, pre, inner, post) => {
-          const innerLines = splitLines(inner);
-          const outLines = innerLines.filter((line) => !isBlankLine(line));
-          return pre + "\n" + joinLines(outLines) + "\n" + post;
-        });
-      }
-    }
-    return result;
-  }
-
-  function stripBetween_R(str, startMarker, endMarker) {
-    if (str == null || str === "") return "";
-    const s = String(str);
-    const starts = Array.isArray(startMarker) ? startMarker : [startMarker];
-    const ends = Array.isArray(endMarker) ? endMarker : [endMarker];
-
-    let result = s;
-    for (const start of starts) {
-      for (const end of ends) {
-        const pattern = new RegExp(`(${escapeRegExp(start)})([\\s\\S]*?)(${escapeRegExp(end)})`, "g");
-        result = result.replace(pattern, (_all, pre, inner, post) => {
-          const innerLines = splitLines(inner);
-          const outLines = innerLines.filter((line) => !isBlankLine(line));
-          return pre + joinLines(outLines) + "\n" + post;
+          return pre + (pad.before ? "\n" : "") + joinLines(outLines) + (pad.after ? "\n" : "") + post;
         });
       }
     }
@@ -136,7 +99,7 @@
     const endMarker =
       "(上記「●●●●」に置き換えて、「PA5J」と入力ください。)";
 
-    return stripBetween_L(s, startMarker, endMarker);
+    return stripBetween(s, startMarker, endMarker, { before: true, after: false });
   }
 
   /**
@@ -155,7 +118,7 @@
     const endMarker =
       "　この先行技術文献調査結果の記録は、拒絶理由を構成するものではありません。";
 
-    return stripBetween_LR(s, startMarker, endMarker);
+    return stripBetween(s, startMarker, endMarker, { before: true, after: true });
   }
 
   /**
@@ -180,7 +143,7 @@
     // 「こと」+ 可変空白 + 「が記載されている。」を "A" に置換
     const pattern = /こと[\s\u3000]*が記載されている。/g;
 
-    return stripBetween_R(s, startMarkers, endMarkers).replace(pattern, "ことが記載されている。");
+    return stripBetween(s, startMarkers, endMarkers, { before: false, after: true }).replace(pattern, "ことが記載されている。");
   }
 
   /**
@@ -199,7 +162,7 @@
     const endMarker =
       "　この付記は、拒絶理由を構成するものではありません。";
 
-    return stripBetween_LR(s, startMarker, endMarker);
+    return stripBetween(s, startMarker, endMarker, { before: true, after: true });
   }
 
   /**
@@ -217,7 +180,7 @@
     const startMarker = "<優先権の主張の効果について>";
     const endMarker = "優先権の主張の効果が認められない。";
 
-    return stripBetween_L(s, startMarker, endMarker);
+    return stripBetween(s, startMarker, endMarker, { before: true, after: false });
   }
 
   function stripBlankLinesInAddedNewMatter(str) {
@@ -227,7 +190,7 @@
     const startMarker = "例えば、請求項１は、";
     const endMarker = "」と認める。";
 
-    return stripBetween_L(s, startMarker, endMarker);
+    return stripBetween(s, startMarker, endMarker, { before: true, after: false });
   }
 
   /**
@@ -247,7 +210,7 @@
       "　なお、上記の補正の示唆は、法律的効果を生じさせるものではなく、拒絶理由を解消するための一案である。明細書等についてどのように補正をするかは、出願人が決定すべきものである。"
     ];
 
-    return stripBetween_LR(s, startMarker, endMarkers);
+    return stripBetween(s, startMarker, endMarkers, { before: true, after: true });
   }
 
   // ========================================================================
@@ -259,8 +222,6 @@
    *
    * - 各関数は基本的に (str: string) => string の形で実装されており、
    *   テキスト整形用のフィルタとしてそのまま利用できます。
-   * - `applyAll` は、このモジュールで定義している個別ルールを
-   *   順番にすべて適用するユーティリティです。
    */
   root.stripBlankLines = {
     // 用途別のヘルパ
