@@ -42,7 +42,7 @@ flowchart TD
 |---|---|
 | 定義ファイル | `js/stripBlankLines.js` |
 | グローバル公開名 | `root.stripBlankLines` |
-| 依存 | `root.textPrimitives`（`splitLines` / `joinLines` / `isBlankLine` / `escapeRegExp`） |
+| 依存 | `root.textPrimitives`（`splitLines` / `joinLines` / `isBlankLine` / `escapeRegExp`）／`root.formatBody`（`isHeadingLine` — 見出し行の前の空行保持に使用） |
 | チェーン登録 | `stripBlankLines`（7 関数）/ `stripBlankLinesTight`（8 関数・末尾に `stripBlankLinesInClaimsBlock`） |
 | 実行されるモード | `officeAction` / `finalOfficeAction` → `stripBlankLines`／`officeActionTight` → `stripBlankLinesTight` |
 | 対象外モード | `pct` / `pct_eng` / `paragraph` / `html` |
@@ -133,6 +133,7 @@ flowchart TD
 | ④ | `-` または `－` で始まる | `------------------------------------`（③ と同種の行頭記号ルール） |
 | 対象テキスト | ヘッダ群と終端行の間の **本文** のみ |
 | 空行削除後 | ヘッダ直後に `\n`、本文、終端行直前に空行 1 行（`\n`）を残す |
+| 見出し行の例外 | 本文中の **見出し行**（`formatBody.isHeadingLine` ＝ `buildHeadingMarkRe` の見出しマーク `(1)` / `１．` / `1)` / `A.` / `第1章` などで始まる行）の直前には空行を 1 行残す。ただし本文の先頭行が見出しの場合はヘッダ群と直結（空行を入れない） |
 | 本文が空のとき | ヘッダ群と終端行が隣接している等、本文行が 0 行なら改変しない |
 | 対象外 | 終端行が見つからない末尾の本文 |
 

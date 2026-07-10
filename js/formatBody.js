@@ -701,6 +701,24 @@
   }
 
   // ======================================================================
+  // 見出し判定（他モジュール向け）
+  // ======================================================================
+
+  /**
+   * 行が buildHeadingMarkRe の見出しマーク（(1) / １． / 1) / A. / 第1章 など）で
+   * 始まるかどうかを判定する。行頭の空白（半角/全角）は許容する。
+   *
+   * - stripBlankLines.js（stripBlankLinesInClaimsBlock）が
+   *   「見出し行の前に空行を 1 行残す」判定に使用する。
+   *
+   * @param {string} line 判定対象の 1 行
+   * @returns {boolean} 見出し行なら true
+   */
+  function isHeadingLine(line) {
+    return HEADING_MARK_RE.test(String(line == null ? "" : line));
+  }
+
+  // ======================================================================
   // 公開
   // ======================================================================
 
@@ -715,6 +733,9 @@
     // 全角化・番号処理
     fwHead: fwHead,
     fwNumLaw: fwNumLaw,
-    fwRefLaw: fwRefLaw
+    fwRefLaw: fwRefLaw,
+
+    // 見出し判定（buildHeadingMarkRe ベース。stripBlankLines が利用）
+    isHeadingLine: isHeadingLine
   };
 })(globalThis);

@@ -17,7 +17,8 @@ const vm = require("vm");
 const assert = require("assert");
 
 const ROOT = path.resolve(__dirname, "..");
-for (const src of ["js/textPrimitives.js", "js/stripBlankLines.js"]) {
+// formatBody.js は isHeadingLine（見出し前の空行保持の判定）のために必要
+for (const src of ["js/textPrimitives.js", "js/formatBody.js", "js/stripBlankLines.js"]) {
   vm.runInThisContext(fs.readFileSync(path.join(ROOT, src), "utf8"), { filename: src });
 }
 
@@ -247,6 +248,62 @@ check(
   "行途中のハイフンは終端にならない",
   "・請求項\n段落[0001]-[0008]の記載\n\n続き\n\n●理由２について",
   "・請求項\n段落[0001]-[0008]の記載\n続き\n\n●理由２について"
+);
+
+// ---------------------------------------------------------------------------
+// 見出し行（buildHeadingMarkRe = formatBody.isHeadingLine）の前は空行を 1 行残す
+// ---------------------------------------------------------------------------
+
+// 本文中の見出し行の前に空行が入る（他の空行は詰める）
+check(
+  "見出し行の前に空行を1行残す",
+  "・請求項\nXXX\n\n(１)主張１について\n\nYYY\n\nZZZ\n\n●理由２について",
+  "・請求項\nXXX\n\n(１)主張１について\nYYY\nZZZ\n\n●理由２について"
+);
+
+// 見出しの形式いろいろ（１． / 1) / 第１章）
+check(
+  "見出し形式: １．",
+  "・請求項\nXXX\n\n１．検討\n\nYYY\n\n●理由２について",
+  "・請求項\nXXX\n\n１．検討\nYYY\n\n●理由２について"
+);
+check(
+  "見出し形式: 1)",
+  "・請求項\nXXX\n\n1)検討\n\nYYY\n\n●理由２について",
+  "・請求項\nXXX\n\n1)検討\nYYY\n\n●理由２について"
+);
+check(
+  "見出し形式: 第１章",
+  "・請求項\nXXX\n\n第１章　総論\n\nYYY\n\n●理由２について",
+  "・請求項\nXXX\n\n第１章　総論\nYYY\n\n●理由２について"
+);
+
+// 複数の見出しがある場合、それぞれの前に空行
+check(
+  "複数見出しの前にそれぞれ空行",
+  "・請求項\n(１)主張１\n\nAAA\n\n(２)主張２\n\nBBB\n\n●理由２について",
+  "・請求項\n(１)主張１\nAAA\n\n(２)主張２\nBBB\n\n●理由２について"
+);
+
+// 本文の先頭行が見出しの場合はヘッダ群直後に空行を入れない（従来の直結形を維持）
+check(
+  "先頭本文が見出しでもヘッダ群直後は直結",
+  "・請求項\n・備考\n(１)主張１について\n\nAAA\n\n●理由２について",
+  "・請求項\n・備考\n(１)主張１について\nAAA\n\n●理由２について"
+);
+
+// 行頭に空白があっても見出しと判定される（HEADING_MARK_RE は行頭空白を許容）
+check(
+  "行頭空白つき見出しの前にも空行",
+  "・請求項\nXXX\n\n　(１)主張１について\n\nYYY\n\n●理由２について",
+  "・請求項\nXXX\n\n　(１)主張１について\nYYY\n\n●理由２について"
+);
+
+// 見出しでない行（数字が行頭でない）には空行を入れない
+check(
+  "見出しでない行には空行を入れない",
+  "・請求項\n本文1.2の説明\n\n続き(1)を参照\n\n●理由２について",
+  "・請求項\n本文1.2の説明\n続き(1)を参照\n\n●理由２について"
 );
 
 console.log(`test_claimsBlock: OK（${passed} ケース全て一致）`);

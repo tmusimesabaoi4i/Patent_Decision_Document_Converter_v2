@@ -14,6 +14,8 @@
  *
  * ▼ 依存
  *   - root.textPrimitives（splitLines / joinLines / isBlankLine / escapeRegExp）
+ *   - root.formatBody（isHeadingLine — 請求項ヘッダブロック内で見出し行の前に
+ *     空行を残す判定に使用）
  * ---------------------------------------------------------------------------
  */
 
@@ -34,6 +36,14 @@
   var joinLines = textPrimitives.joinLines;
   var isBlankLine = textPrimitives.isBlankLine;
   var escapeRegExp = textPrimitives.escapeRegExp;
+
+  var formatBody = root.formatBody;
+  if (!formatBody || typeof formatBody.isHeadingLine !== "function") {
+    // eslint-disable-next-line no-console
+    console.warn("stripBlankLines.js: root.formatBody.isHeadingLine が見つかりません。formatBody.js を先に読み込んでください。");
+    return;
+  }
+  var isHeadingLine = formatBody.isHeadingLine;
 
   // ========================================================================
   // 内部共通ユーティリティ
@@ -311,6 +321,9 @@
    *   消費しない先読み（lookahead）で検出する。これにより複数の理由
    *   セクションが連続していても、すべてのブロックが処理される。
    * - 本文の空行を全て削除し、終端行の直前に空行をちょうど 1 行残す。
+   *   ただし見出し行（formatBody.isHeadingLine = buildHeadingMarkRe の
+   *   見出しマークで始まる行。(1) / １． / 第1章 など）の直前には
+   *   空行を 1 行残す（tight で詰めた後も見出しの区切りを保つ）。
    * - 本文が空（ヘッダ群と終端行が隣接している等）の場合は何もしない。
    * - 終端行が見つからない末尾の本文は対象外。
    *
@@ -331,10 +344,15 @@
       var innerLines = splitLines(inner);
       var outLines = [];
       for (var i = 0; i < innerLines.length; i++) {
-        if (!isBlankLine(innerLines[i])) outLines.push(innerLines[i]);
+        if (isBlankLine(innerLines[i])) continue;
+        // 見出し行の前には空行を 1 行入れる（詰めた後も見出しの区切りを保つ）
+        if (isHeadingLine(innerLines[i])) outLines.push("");
+        outLines.push(innerLines[i]);
       }
       // 本文が無い場合（ヘッダ群と終端行が隣接）は改変しない
       if (outLines.length === 0) return header + inner;
+      // 先頭が見出しで空行から始まる場合、ヘッダ直後の "\n" と重複させない
+      if (outLines[0] === "") outLines.shift();
       // 末尾の "\n" は、残存する終端行の "\n" と合わせて空行 1 行になる
       return header + "\n" + joinLines(outLines) + "\n";
     });
