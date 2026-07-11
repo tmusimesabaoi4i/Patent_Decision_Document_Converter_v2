@@ -1,8 +1,12 @@
 # 変換パイプラインと FilterRegistry
 
-本ドキュメントは、このアプリの **変換処理の全体像** と **`FilterRegistry` クラスの API** を扱います。
+本ドキュメントは、このアプリの **アーキテクチャの正本** です。**変換処理の全体像**・**`FilterRegistry` クラスの API**・**チェーン一覧**・**モード→チェーン対応** を扱います。
 
 - アプリの使い方 → [README.md](../README.md)
+- ボタン→関数のフロー・各関数の処理内容 → [../js/flow.md](../js/flow.md)
+- 空行削除（マーカー間・請求項ヘッダブロック）の深掘り → [../js/stripBlankLines.md](../js/stripBlankLines.md)
+
+> 6 層構造・`FilterRegistry` API・チェーン一覧・モード→チェーン対応を変更したら、本書を更新してください。
 
 ---
 
@@ -104,6 +108,8 @@ app.js                     → 自動起動
 | `formatBoilerplate` | 最終拒絶向け末尾処理 | `formatBoilerplate` |
 | `extractParagraphRefs` | 段落・図番号の抽出 | `paragraphExtraction` |
 | `toHtml` | HTML 生成 | `makeHtml` |
+
+> 各チェーンを構成する関数と処理内容の一覧は [../js/flow.md](../js/flow.md)（「チェーン別: 通過する関数と処理内容」）が正本です。空行削除系（`stripBlankLines` / `stripBlankLinesTight` / `tightClaims`）のマーカーやブロック仕様の深掘りは [../js/stripBlankLines.md](../js/stripBlankLines.md) を参照。
 
 ---
 

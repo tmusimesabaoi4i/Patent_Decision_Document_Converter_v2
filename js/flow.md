@@ -4,6 +4,8 @@
 Convert / Copy の入り口から、モードハンドラ → フィルタチェーン → 個別フィルタ関数までを、実際のコード（`js/*.js` と `filterRegistry/filterRegistry.js`）に沿って追えるようにしています。
 コード（特に `js/filterChains.js` のチェーン定義や `js/modeFunctionLists.js` のモード対応）を変更した場合は、この文書も必ず更新してください。
 
+関連: アーキテクチャ全体・モード→チェーン対応の正本は [../filterRegistry/filterRegistry.md](../filterRegistry/filterRegistry.md)、空行削除の深掘り正本は [stripBlankLines.md](stripBlankLines.md)。
+
 ---
 
 ## UI 操作の一覧
@@ -53,26 +55,14 @@ flowchart TD
 
 ---
 
-## モード別: 実行されるチェーンと関数
+## モード別: 実行されるチェーン
 
-各モードが `runTextChains` に渡すチェーン名の並びです（`js/modeFunctionLists.js`）。各チェーンの中身は次章「チェーン別: 通過する関数と処理内容」を参照してください。
+各モード（`value`）が `runTextChains` に渡すチェーン名の並び（`js/modeFunctionLists.js`）は、**モード→チェーン対応表の正本**である [../filterRegistry/filterRegistry.md](../filterRegistry/filterRegistry.md) の「3. モードとパイプライン」にまとめています。各チェーンの中身は次章「チェーン別: 通過する関数と処理内容」を参照してください。
 
-| モード（`value`） | UI 名称 | 実行チェーン（この順） |
-|---|---|---|
-| `officeAction` | Office Action | `normalize` → `formatBody` → `stripBlankLines` → `formatTail` |
-| `officeActionTight` | Office Action (Tight) | `normalize` → `formatBody` → `stripBlankLinesTight` → `formatTail` |
-| `finalOfficeAction` | Final Office Action | `normalize` → `formatBody` → `stripBlankLines` → `formatBoilerplate` |
-| `pct` | PCT | `normalize` → `formatBody` |
-| `pct_eng` | PCT (English) | `normalize` → `formatBody` |
-| `paragraph` | Paragraphs | `extractParagraphRefs` |
-| `html` | to HTML | `toHtml` |
+フローを追ううえでの要点だけ再掲します。
 
-補足:
-- `officeAction` は `normalize → formatBody → stripBlankLines → formatTail` を実行します。
-- `officeActionTight` と `officeAction` との違いは `stripBlankLinesTight`（請求項ヘッダブロックの空行も詰める）だけです。
-- `finalOfficeAction` は 4 段目だけが異なり `formatTail` の代わりに `formatBoilerplate`（`formatBoilerplateLines` のみ）を実行します。
-- `pct` は末尾の空行削除・末尾整形を行わず `normalize → formatBody` のみ。`pct_eng` は `pct` と同じ構成（`normalize → formatBody`）です。
-- `paragraph` / `html` は前処理（`normalize`）を通さず、専用の単一チェーンのみを実行します。
+- `officeAction` と `officeActionTight` の違いは 3 段目だけ（`stripBlankLines` → `stripBlankLinesTight`。請求項ヘッダブロックの空行も詰める）。
+- `finalOfficeAction` は 4 段目が `formatTail` ではなく `formatBoilerplate`。`pct` / `pct_eng` は `normalize → formatBody` のみ。`paragraph` / `html` は前処理（`normalize`）を通さない単一チェーン。
 
 ---
 
@@ -111,7 +101,7 @@ flowchart TD
 
 ### stripBlankLines チェーン（6 関数）— `js/stripBlankLines.js`
 
-特定マーカーで挟まれたブロック内の空行だけを削除。全関数が内部で共通エンジン `stripBetween` を使う。定義: `register("stripBlankLines", [...])`。
+特定マーカーで挟まれたブロック内の空行だけを削除。全関数が内部で共通エンジン `stripBetween` を使う。定義: `register("stripBlankLines", [...])`。各関数の開始／終了マーカー文字列・`pad` 設定の一覧は [stripBlankLines.md](stripBlankLines.md) を参照。
 
 | 順 | 関数 | 定義ファイル | 処理内容（対象範囲） |
 |---|---|---|---|
@@ -130,7 +120,7 @@ flowchart TD
 
 | 順 | 関数 | 定義ファイル | 処理内容（対象範囲） |
 |---|---|---|---|
-| 7 | `stripBlankLinesInClaimsBlock` | js/stripBlankLines.js | 請求項ヘッダ群（4 パターン: ①請求項+引用文献等+備考 ②請求項+引用文献等 ③請求項+備考 ④請求項のみ）からブロック終端までの本文の空行を削除し、終端行の直前に空行を1行残す。終端は行頭一致で「・請求項」／「●理由」／「<」「＜」で始まる行／「-」「－」で始まる行のいずれか（`<` と `-` はいずれも行頭の記号で始まる行として同種）。終端は消費しない先読みで検出するため複数の理由セクションが連続していてもすべてのブロックを処理する。本文中の見出し行（`formatBody.isHeadingLine` ＝ `buildHeadingMarkRe` の見出しマークで始まる行）の直前には空行を1行残す。終端行が見つからない末尾の本文は対象外。 |
+| 7 | `stripBlankLinesInClaimsBlock` | js/stripBlankLines.js | 請求項ヘッダ群（`・請求項` 群、4 パターン）からブロック終端（行頭一致で `・請求項` / `●理由` / `<`・`＜` / `-`・`－` の行）手前までの本文の空行を削除し、終端の直前に空行を 1 行残す（本文中の見出し行 `formatBody.isHeadingLine` の直前も 1 行残す）。ヘッダ 4 パターン・終端 4 種・見出し例外の詳細仕様は [stripBlankLines.md](stripBlankLines.md) が正本。 |
 
 ### formatTail チェーン（4 関数）— `js/formatSearchResult.js` / `js/formatAmendmentNote.js` / `js/formatBoilerplate.js`
 
