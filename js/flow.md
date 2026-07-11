@@ -109,7 +109,7 @@ flowchart TD
 | 6 | `fwRefLaw` | js/formatBody.js | 「表◯」などの参照番号列を数字開始のときだけ全角化（「特表」は除外し誤変換を防止）。 |
 | 7 | `tightClaims` | js/stripBlankLines.js | `『』` で囲まれた範囲内の空白行を削除する（`formatBody` チェーンから利用されるが、定義自体は `stripBlankLines.js`）。 |
 
-### stripBlankLines チェーン（7 関数）— `js/stripBlankLines.js`
+### stripBlankLines チェーン（6 関数）— `js/stripBlankLines.js`
 
 特定マーカーで挟まれたブロック内の空行だけを削除。全関数が内部で共通エンジン `stripBetween` を使う。定義: `register("stripBlankLines", [...])`。
 
@@ -117,21 +117,20 @@ flowchart TD
 |---|---|---|---|
 | 1 | `stripBlankLinesInCorrectionNote` | js/stripBlankLines.js | 「<補正をする際の注意>」〜「(上記「●●●●」に置き換えて…PA5J…)」の範囲内の空行を削除。 |
 | 2 | `stripBlankLinesInSearchResult` | js/stripBlankLines.js | 「<先行技術文献調査結果の記録>」〜「この先行技術文献調査結果の記録は…ではありません。」の範囲内の空行を削除。 |
-| 3 | `stripBlankLinesInCitation` | js/stripBlankLines.js | 「引用文献１(特に…」等〜「ことが記載されている。/が記載されている。」の範囲内の空行を削除し、「こと…が記載されている。」の間の空白も詰める。 |
-| 4 | `stripBlankLinesInAppendix` | js/stripBlankLines.js | 「<付記>」〜「この付記は、拒絶理由を構成するものではありません。」の範囲内の空行を削除。 |
-| 5 | `stripBlankLinesInPriority` | js/stripBlankLines.js | 「<優先権の主張の効果について>」〜「優先権の主張の効果が認められない。」の範囲内の空行を削除。 |
-| 6 | `stripBlankLinesInAmendmentSuggestion` | js/stripBlankLines.js | 「<補正の示唆>」〜「なお、上記の補正の示唆は…出願人が決定すべきものである。」の範囲内の空行を削除。 |
-| 7 | `stripBlankLinesInAddedNewMatter` | js/stripBlankLines.js | 「例えば、請求項１は、」〜「」と認める。」の範囲内の空行を削除。 |
+| 3 | `stripBlankLinesInAppendix` | js/stripBlankLines.js | 「<付記>」〜「この付記は、拒絶理由を構成するものではありません。」の範囲内の空行を削除。 |
+| 4 | `stripBlankLinesInPriority` | js/stripBlankLines.js | 「<優先権の主張の効果について>」〜「優先権の主張の効果が認められない。」の範囲内の空行を削除。 |
+| 5 | `stripBlankLinesInAmendmentSuggestion` | js/stripBlankLines.js | 「<補正の示唆>」〜「なお、上記の補正の示唆は…出願人が決定すべきものである。」の範囲内の空行を削除。 |
+| 6 | `stripBlankLinesInAddedNewMatter` | js/stripBlankLines.js | 「例えば、請求項１は、」〜「」と認める。」の範囲内の空行を削除。 |
 
-### stripBlankLinesTight チェーン（8 関数）— `js/stripBlankLines.js`
+### stripBlankLinesTight チェーン（7 関数）— `js/stripBlankLines.js`
 
-`stripBlankLines` チェーンの全 7 関数に、8 番目として `stripBlankLinesInClaimsBlock` を追加したもの。`officeActionTight` モード専用。定義: `register("stripBlankLinesTight", [...])`。
+`stripBlankLines` チェーンの全 6 関数に、7 番目として `stripBlankLinesInClaimsBlock` を追加したもの。`officeActionTight` モード専用。定義: `register("stripBlankLinesTight", [...])`。
 
-- 1〜7 は上記「stripBlankLines チェーン（7 関数）」と同一（`stripBlankLinesInCorrectionNote` 〜 `stripBlankLinesInAddedNewMatter`）。
+- 1〜6 は上記「stripBlankLines チェーン（6 関数）」と同一（`stripBlankLinesInCorrectionNote` 〜 `stripBlankLinesInAddedNewMatter`）。
 
 | 順 | 関数 | 定義ファイル | 処理内容（対象範囲） |
 |---|---|---|---|
-| 8 | `stripBlankLinesInClaimsBlock` | js/stripBlankLines.js | 請求項ヘッダ群（4 パターン: ①請求項+引用文献等+備考 ②請求項+引用文献等 ③請求項+備考 ④請求項のみ）からブロック終端までの本文の空行を削除し、終端行の直前に空行を1行残す。終端は行頭一致で「・請求項」／「●理由」／「<」「＜」で始まる行／「-」「－」で始まる行のいずれか（`<` と `-` はいずれも行頭の記号で始まる行として同種）。終端は消費しない先読みで検出するため複数の理由セクションが連続していてもすべてのブロックを処理する。本文中の見出し行（`formatBody.isHeadingLine` ＝ `buildHeadingMarkRe` の見出しマークで始まる行）の直前には空行を1行残す。終端行が見つからない末尾の本文は対象外。 |
+| 7 | `stripBlankLinesInClaimsBlock` | js/stripBlankLines.js | 請求項ヘッダ群（4 パターン: ①請求項+引用文献等+備考 ②請求項+引用文献等 ③請求項+備考 ④請求項のみ）からブロック終端までの本文の空行を削除し、終端行の直前に空行を1行残す。終端は行頭一致で「・請求項」／「●理由」／「<」「＜」で始まる行／「-」「－」で始まる行のいずれか（`<` と `-` はいずれも行頭の記号で始まる行として同種）。終端は消費しない先読みで検出するため複数の理由セクションが連続していてもすべてのブロックを処理する。本文中の見出し行（`formatBody.isHeadingLine` ＝ `buildHeadingMarkRe` の見出しマークで始まる行）の直前には空行を1行残す。終端行が見つからない末尾の本文は対象外。 |
 
 ### formatTail チェーン（4 関数）— `js/formatSearchResult.js` / `js/formatAmendmentNote.js` / `js/formatBoilerplate.js`
 

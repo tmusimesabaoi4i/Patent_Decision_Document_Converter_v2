@@ -117,7 +117,6 @@
   // 必要なフィルタ関数を取り出す
   var stripBlankLinesInCorrectionNote = Lib_StripBlankLines.stripBlankLinesInCorrectionNote;
   var stripBlankLinesInSearchResult = Lib_StripBlankLines.stripBlankLinesInSearchResult;
-  var stripBlankLinesInCitation = Lib_StripBlankLines.stripBlankLinesInCitation;
   var stripBlankLinesInAppendix = Lib_StripBlankLines.stripBlankLinesInAppendix;
   var stripBlankLinesInPriority = Lib_StripBlankLines.stripBlankLinesInPriority;
   var stripBlankLinesInAmendmentSuggestion = Lib_StripBlankLines.stripBlankLinesInAmendmentSuggestion;
@@ -129,14 +128,13 @@
   if (
     typeof stripBlankLinesInCorrectionNote !== "function" ||
     typeof stripBlankLinesInSearchResult !== "function" ||
-    typeof stripBlankLinesInCitation !== "function" ||
     typeof stripBlankLinesInAppendix !== "function" ||
     typeof stripBlankLinesInPriority !== "function" ||
     typeof stripBlankLinesInAmendmentSuggestion !== "function" ||
     typeof stripBlankLinesInAddedNewMatter !== "function"
   ) {
     // eslint-disable-next-line no-console
-    console.warn("stripBlankLinesInCorrectionNote, stripBlankLinesInSearchResult, stripBlankLinesInCitation, stripBlankLinesInAppendix, stripBlankLinesInPriority, stripBlankLinesInAmendmentSuggestion, stripBlankLinesInAddedNewMatter のいずれかが定義されていません。stripBlankLines.js を確認してください。");
+    console.warn("stripBlankLinesInCorrectionNote, stripBlankLinesInSearchResult, stripBlankLinesInAppendix, stripBlankLinesInPriority, stripBlankLinesInAmendmentSuggestion, stripBlankLinesInAddedNewMatter のいずれかが定義されていません。stripBlankLines.js を確認してください。");
     return;
   }
 
@@ -289,7 +287,6 @@
   filterChains.register("stripBlankLines", [
     stripBlankLinesInCorrectionNote,
     stripBlankLinesInSearchResult,
-    stripBlankLinesInCitation,
     stripBlankLinesInAppendix,
     stripBlankLinesInPriority,
     stripBlankLinesInAmendmentSuggestion,
@@ -300,7 +297,6 @@
   filterChains.register("stripBlankLinesTight", [
     stripBlankLinesInCorrectionNote,
     stripBlankLinesInSearchResult,
-    stripBlankLinesInCitation,
     stripBlankLinesInAppendix,
     stripBlankLinesInPriority,
     stripBlankLinesInAmendmentSuggestion,

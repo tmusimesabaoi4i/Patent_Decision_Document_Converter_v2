@@ -7,10 +7,9 @@
  * ▼ 公開するグローバル
  *   - root.stripBlankLines
  *       stripBlankLinesInCorrectionNote, stripBlankLinesInSearchResult,
- *       stripBlankLinesInCitation, stripBlankLinesInAppendix,
- *       stripBlankLinesInPriority, stripBlankLinesInAmendmentSuggestion,
- *       stripBlankLinesInAddedNewMatter, stripBlankLinesInClaimsBlock,
- *       tightClaims
+ *       stripBlankLinesInAppendix, stripBlankLinesInPriority,
+ *       stripBlankLinesInAmendmentSuggestion, stripBlankLinesInAddedNewMatter,
+ *       stripBlankLinesInClaimsBlock, tightClaims
  *
  * ▼ 依存
  *   - root.textPrimitives（splitLines / joinLines / isBlankLine / escapeRegExp）
@@ -130,31 +129,6 @@
       "　この先行技術文献調査結果の記録は、拒絶理由を構成するものではありません。";
 
     return stripBetween(s, startMarker, endMarker, { before: true, after: true });
-  }
-
-  /**
-   * 「引用文献１(特に段落...)」から
-   * 「…ことが記載されている。」または「…が記載されている。」までの
-   * 範囲に含まれる空白行を削除します。
-   *
-   * - 終了マーカーは 2 種類の候補文字列を用意しており、
-   *   いずれかにマッチした範囲が処理対象になります。
-   *
-   * @param {string} str 入力文字列
-   * @returns {string} 該当範囲の空白行が削除された文字列
-   */
-  function stripBlankLinesInCitation(str) {
-    if (str == null || str === "") return "";
-    const s = String(str);
-
-    const startMarkers = ["引用文献１(特に", "引用文献２(特に"]; // 必要に応じて他のパターンを追加
-    const endMarkers = ["　ことが記載されている。", "　が記載されている。"];
-
-    // 間の空白は、半角/全角スペース・タブ・改行などを許容
-    // 「こと」+ 可変空白 + 「が記載されている。」を "A" に置換
-    const pattern = /こと[\s\u3000]*が記載されている。/g;
-
-    return stripBetween(s, startMarkers, endMarkers, { before: false, after: true }).replace(pattern, "ことが記載されている。");
   }
 
   /**
@@ -372,7 +346,6 @@
     // 用途別のヘルパ
     stripBlankLinesInCorrectionNote: stripBlankLinesInCorrectionNote,
     stripBlankLinesInSearchResult: stripBlankLinesInSearchResult,
-    stripBlankLinesInCitation: stripBlankLinesInCitation,
     stripBlankLinesInAppendix: stripBlankLinesInAppendix,
     stripBlankLinesInPriority: stripBlankLinesInPriority,
     stripBlankLinesInAmendmentSuggestion: stripBlankLinesInAmendmentSuggestion,
