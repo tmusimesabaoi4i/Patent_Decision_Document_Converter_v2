@@ -56,14 +56,16 @@ tools/
   golden.js                  … 回帰テスト（ゴールデン比較）ハーネス
   smoke.js                   … UI 配線のスモークテスト
   test_claimsBlock.js        … 請求項ヘッダブロック空行削除の単体テスト
+  test_signature.js          … 署名ブロック（区切り線〜署名メール行）空行削除の単体テスト
   fixtures/                  … テスト入力（実例文＋合成ケース）
   goldens/                   … モードごとの期待出力
 ```
 
 ## 回帰テスト
 
-- `node tools/golden.js verify` … 全 7 モード × 14 fixture（98 ケース）の変換結果を `tools/goldens/` とバイト単位で比較する
+- `node tools/golden.js verify` … 全 7 モード × 15 fixture（105 ケース）の変換結果を `tools/goldens/` とバイト単位で比較する
 - `node tools/test_claimsBlock.js` … `stripBlankLinesInClaimsBlock`（請求項ヘッダブロック内の空行削除、`officeActionTight` モードで使用）の単体テスト（42 ケース）
+- `node tools/test_signature.js` … `stripBlankLinesInSignature`（区切り線〜署名メール行の空行削除）の単体テスト（14 ケース）
 - `node tools/smoke.js` … 最小 DOM スタブでアプリを起動し、Convert / `Ctrl`+`Enter` / Copy の配線を確認する
 - 変換ルールを意図して変えたときだけ `node tools/golden.js capture` でゴールデンを更新し、diff をレビューする
 

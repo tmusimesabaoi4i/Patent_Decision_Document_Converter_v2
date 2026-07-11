@@ -8,7 +8,8 @@
  *   - root.stripBlankLines
  *       stripBlankLinesInCorrectionNote, stripBlankLinesInSearchResult,
  *       stripBlankLinesInAppendix, stripBlankLinesInPriority,
- *       stripBlankLinesInAmendmentSuggestion, stripBlankLinesInClaimsBlock
+ *       stripBlankLinesInAmendmentSuggestion, stripBlankLinesInSignature,
+ *       stripBlankLinesInClaimsBlock
  *
  * ▼ 依存
  *   - root.textPrimitives（splitLines / joinLines / isBlankLine / escapeRegExp）
@@ -188,6 +189,50 @@
   }
 
   // ========================================================================
+  // 区切り線〜署名メール行（連絡先ブロック）内の空白行削除
+  // ========================================================================
+
+  /**
+   * 区切り線（ハイフンのみの行）から署名メール行
+   * 「※●●●●@jpo.go.jp (上記「●●●●」に置き換えて、「PA5J」と入力ください。)」
+   * までの間に含まれる空白行を削除します。
+   *
+   * - 区切り線: 行全体がハイフンのみ（半角 - / 全角 －、10 文字以上）の行。
+   *   行頭・行末の空白は許容する。パイプライン 3 段目の時点では半角形
+   *   「------…----」が主だが、全角形の入力にも備えて両方を対象とする。
+   * - 署名メール行: 行頭（空白許容）が「※●●●●@jpo.go.jp」で始まる行。
+   * - ただし、両者の間に「<」または「＜」で始まる行（山括弧見出し）が
+   *   1 行でも存在する場合、その区間は対象外として何もしない。
+   *   （<先行技術文献調査結果の記録> や <補正をする際の注意> など、
+   *   独自の整形を持つセクションが挟まっているケースを巻き込まないため）
+   *
+   * @param {string} str 入力文字列
+   * @returns {string} 該当範囲の空白行が削除された文字列
+   */
+  function stripBlankLinesInSignature(str) {
+    if (str == null || str === "") return "";
+    var s = String(str);
+
+    // (区切り線)(本文)(署名メール行) — いずれも行単位で照合（m フラグ）
+    var pattern = new RegExp(
+      "(^[ 　]*[-－]{10,}[ 　]*$)([\\s\\S]*?)(^[ 　]*※●●●●@jpo\\.go\\.jp[^\\n]*$)",
+      "gm"
+    );
+
+    return s.replace(pattern, function (all, divider, inner, email) {
+      // 間に山括弧見出し行（< / ＜ 始まり。行頭空白許容）があれば対象外
+      if (/^[ 　]*[<＜]/m.test(inner)) return all;
+
+      var innerLines = splitLines(inner);
+      var outLines = [];
+      for (var i = 0; i < innerLines.length; i++) {
+        if (!isBlankLine(innerLines[i])) outLines.push(innerLines[i]);
+      }
+      return divider + "\n" + joinLines(outLines) + "\n" + email;
+    });
+  }
+
+  // ========================================================================
   // 請求項ヘッダブロック内の空白行削除
   // ========================================================================
 
@@ -278,6 +323,9 @@
     stripBlankLinesInAppendix: stripBlankLinesInAppendix,
     stripBlankLinesInPriority: stripBlankLinesInPriority,
     stripBlankLinesInAmendmentSuggestion: stripBlankLinesInAmendmentSuggestion,
+
+    // 区切り線〜署名メール行（連絡先ブロック）内の空白行削除
+    stripBlankLinesInSignature: stripBlankLinesInSignature,
 
     // 請求項ヘッダブロック内の空白行削除（stripBlankLinesTight チェーン用）
     stripBlankLinesInClaimsBlock: stripBlankLinesInClaimsBlock

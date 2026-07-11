@@ -98,9 +98,9 @@ flowchart TD
 | 5 | `fwNumLaw` | js/formatBody.js | 「第◯条第◯項第◯号」「令和/平成の日付」「請求項/段落/図」等の番号を全角化する（条文・参照番号系）。 |
 | 6 | `fwRefLaw` | js/formatBody.js | 「表◯」などの参照番号列を数字開始のときだけ全角化（「特表」は除外し誤変換を防止）。 |
 
-### stripBlankLines チェーン（5 関数）— `js/stripBlankLines.js`
+### stripBlankLines チェーン（6 関数）— `js/stripBlankLines.js`
 
-特定マーカーで挟まれたブロック内の空行だけを削除。全関数が内部で共通エンジン `stripBetween` を使う。定義: `register("stripBlankLines", [...])`。各関数の開始／終了マーカー文字列・`pad` 設定の一覧は [stripBlankLines.md](stripBlankLines.md) を参照。
+特定マーカーで挟まれたブロック内の空行だけを削除。先頭 5 関数は内部で共通エンジン `stripBetween` を使い、6 番目（`stripBlankLinesInSignature`）は独自の条件付き行単位正規表現を使う。定義: `register("stripBlankLines", [...])`。各関数の開始／終了マーカー文字列・`pad` 設定の一覧は [stripBlankLines.md](stripBlankLines.md) を参照。
 
 | 順 | 関数 | 定義ファイル | 処理内容（対象範囲） |
 |---|---|---|---|
@@ -109,12 +109,13 @@ flowchart TD
 | 3 | `stripBlankLinesInAppendix` | js/stripBlankLines.js | 「<付記>」〜「この付記は、拒絶理由を構成するものではありません。」の範囲内の空行を削除。 |
 | 4 | `stripBlankLinesInPriority` | js/stripBlankLines.js | 「<優先権の主張の効果について>」〜「優先権の主張の効果が認められない。」の範囲内の空行を削除。 |
 | 5 | `stripBlankLinesInAmendmentSuggestion` | js/stripBlankLines.js | 「<補正の示唆>」〜「なお、上記の補正の示唆は…出願人が決定すべきものである。」の範囲内の空行を削除。 |
+| 6 | `stripBlankLinesInSignature` | js/stripBlankLines.js | 区切り線（行全体がハイフンのみ・半角 `-`／全角 `－`・10 文字以上、行頭行末の空白許容）〜署名メール行（行頭空白許容で「※●●●●@jpo.go.jp」で始まる行）の範囲内の空行を削除。ただし間に `<`・`＜` 始まりの行が 1 行でもあれば、その区間は不変。 |
 
-### stripBlankLinesTight チェーン（6 関数）— `js/stripBlankLines.js`
+### stripBlankLinesTight チェーン（7 関数）— `js/stripBlankLines.js`
 
-`stripBlankLines` チェーンの全 5 関数に、6 番目として `stripBlankLinesInClaimsBlock` を追加したもの。`officeActionTight` モード専用。定義: `register("stripBlankLinesTight", [...])`。
+`stripBlankLines` チェーンの全 6 関数に、7 番目として `stripBlankLinesInClaimsBlock` を追加したもの。`officeActionTight` モード専用。定義: `register("stripBlankLinesTight", [...])`。
 
-- 1〜5 は上記「stripBlankLines チェーン（5 関数）」と同一（`stripBlankLinesInCorrectionNote` 〜 `stripBlankLinesInAmendmentSuggestion`）。
+- 1〜6 は上記「stripBlankLines チェーン（6 関数）」と同一（`stripBlankLinesInCorrectionNote` 〜 `stripBlankLinesInSignature`）。
 
 | 順 | 関数 | 定義ファイル | 処理内容（対象範囲） |
 |---|---|---|---|
