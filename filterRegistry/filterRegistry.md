@@ -5,6 +5,7 @@
 - アプリの使い方 → [README.md](../README.md)
 - ボタン→関数のフロー・各関数の処理内容 → [../js/flow.md](../js/flow.md)
 - 空行削除（マーカー間・請求項ヘッダブロック）の深掘り → [../js/stripBlankLines.md](../js/stripBlankLines.md)
+- 末尾ブロック書式変換（調査結果・ファミリー情報・補正の示唆・定型行）の深掘り → [../js/formatTail.md](../js/formatTail.md)
 
 > 6 層構造・`FilterRegistry` API・チェーン一覧・モード→チェーン対応を変更したら、本書を更新してください。
 
@@ -109,7 +110,7 @@ app.js                     → 自動起動
 | `extractParagraphRefs` | 段落・図番号の抽出 | `paragraphExtraction` |
 | `toHtml` | HTML 生成 | `makeHtml` |
 
-> 各チェーンを構成する関数と処理内容の一覧は [../js/flow.md](../js/flow.md)（「チェーン別: 通過する関数と処理内容」）が正本です。空行削除系（`stripBlankLines` / `stripBlankLinesTight` / `tightClaims`）のマーカーやブロック仕様の深掘りは [../js/stripBlankLines.md](../js/stripBlankLines.md) を参照。
+> 各チェーンを構成する関数と処理内容の一覧は [../js/flow.md](../js/flow.md)（「チェーン別: 通過する関数と処理内容」）が正本です。空行削除系（`stripBlankLines` / `stripBlankLinesTight` / `tightClaims`）のマーカーやブロック仕様の深掘りは [../js/stripBlankLines.md](../js/stripBlankLines.md)、末尾書式変換系（`formatTail` / `formatBoilerplate`）のマーカーや行変換ルールの深掘りは [../js/formatTail.md](../js/formatTail.md) を参照。
 
 ---
 

@@ -19,6 +19,7 @@
 | [filterRegistry/filterRegistry.md](filterRegistry/filterRegistry.md) | アーキテクチャ正本。6 層構造・`FilterRegistry` API・チェーン一覧（正本）・モード→チェーン対応（正本）・変換ルールの編集ガイド。 |
 | [js/flow.md](js/flow.md) | UI 操作起点のフロー正本。ボタン→関数の流れと、チェーン別の関数（各関数の処理内容）。 |
 | [js/stripBlankLines.md](js/stripBlankLines.md) | 空行削除の深掘り正本。エンジン比較・マーカー表・請求項ヘッダブロック仕様。 |
+| [js/formatTail.md](js/formatTail.md) | 末尾ブロック書式変換の深掘り正本。`formatTail` / `formatBoilerplate` チェーン 4 関数（調査結果・ファミリー情報・補正の示唆・定型行）のマーカーと行変換ルール。 |
 
 > コード（モード・チェーン・スクリプト構成）を変えたら、本書のドキュメント一覧・プロジェクト構成・テスト件数も更新してください。設計の詳細は上表の各正本ドキュメントを参照。
 
@@ -47,6 +48,7 @@ js/
   app.js                     … アプリ本体（起動・DOM 配線）
   flow.md                    … ボタン別 関数フロー（フロー正本）
   stripBlankLines.md         … 空行削除の深掘り正本
+  formatTail.md              … 末尾ブロック書式変換の深掘り正本
 filterRegistry/
   filterRegistry.js          … フィルタパイプライン基盤（FilterRegistry クラス）
   filterRegistry.md          … アーキテクチャ正本（変換パイプライン設計）

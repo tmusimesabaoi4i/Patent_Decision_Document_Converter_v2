@@ -4,7 +4,7 @@
 Convert / Copy の入り口から、モードハンドラ → フィルタチェーン → 個別フィルタ関数までを、実際のコード（`js/*.js` と `filterRegistry/filterRegistry.js`）に沿って追えるようにしています。
 コード（特に `js/filterChains.js` のチェーン定義や `js/modeFunctionLists.js` のモード対応）を変更した場合は、この文書も必ず更新してください。
 
-関連: アーキテクチャ全体・モード→チェーン対応の正本は [../filterRegistry/filterRegistry.md](../filterRegistry/filterRegistry.md)、空行削除の深掘り正本は [stripBlankLines.md](stripBlankLines.md)。
+関連: アーキテクチャ全体・モード→チェーン対応の正本は [../filterRegistry/filterRegistry.md](../filterRegistry/filterRegistry.md)、空行削除の深掘り正本は [stripBlankLines.md](stripBlankLines.md)、末尾ブロック書式変換の深掘り正本は [formatTail.md](formatTail.md)。
 
 ---
 
@@ -124,7 +124,7 @@ flowchart TD
 
 ### formatTail チェーン（4 関数）— `js/formatSearchResult.js` / `js/formatAmendmentNote.js` / `js/formatBoilerplate.js`
 
-文書末尾ブロック（調査結果・ファミリー情報・補正の示唆・署名など）の書式変換。定義: `register("formatTail", [formatSearchResultBlock, formatFamilyInfoBlock, formatAmendmentNoteBlock, formatBoilerplateLines])`。
+文書末尾ブロック（調査結果・ファミリー情報・補正の示唆・署名など）の書式変換。定義: `register("formatTail", [formatSearchResultBlock, formatFamilyInfoBlock, formatAmendmentNoteBlock, formatBoilerplateLines])`。各関数のマーカー文字列・行種別ごとの変換ルールの深掘りは [formatTail.md](formatTail.md) が正本（`formatBoilerplate` チェーンも同ドキュメントで扱う）。
 
 | 順 | 関数 | 定義ファイル | 処理内容 |
 |---|---|---|---|
