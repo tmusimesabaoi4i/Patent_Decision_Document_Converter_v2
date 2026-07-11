@@ -20,6 +20,7 @@
 | [js/flow.md](js/flow.md) | UI 操作起点のフロー正本。ボタン→関数の流れと、チェーン別の関数（各関数の処理内容）。 |
 | [js/stripBlankLines.md](js/stripBlankLines.md) | 空行削除の深掘り正本。エンジン比較・マーカー表・請求項ヘッダブロック仕様。 |
 | [js/formatTail.md](js/formatTail.md) | 末尾ブロック書式変換の深掘り正本。`formatTail` / `formatBoilerplate` チェーン 4 関数（調査結果・ファミリー情報・補正の示唆・定型行）のマーカーと行変換ルール。 |
+| [js/buildHeadingMarkRe.md](js/buildHeadingMarkRe.md) | 見出しマーク判定の深掘り正本。`buildHeadingMarkRe` が生成する `HEADING_MARK_RE` の許容 9 形式・設定（`maxDigits` / `maxDepth` / `alphaMax`）・使用箇所。 |
 
 > コード（モード・チェーン・スクリプト構成）を変えたら、本書のドキュメント一覧・プロジェクト構成・テスト件数も更新してください。設計の詳細は上表の各正本ドキュメントを参照。
 
@@ -49,6 +50,7 @@ js/
   flow.md                    … ボタン別 関数フロー（フロー正本）
   stripBlankLines.md         … 空行削除の深掘り正本
   formatTail.md              … 末尾ブロック書式変換の深掘り正本
+  buildHeadingMarkRe.md      … 見出しマーク判定の深掘り正本
 filterRegistry/
   filterRegistry.js          … フィルタパイプライン基盤（FilterRegistry クラス）
   filterRegistry.md          … アーキテクチャ正本（変換パイプライン設計）
@@ -64,7 +66,7 @@ tools/
 ## 回帰テスト
 
 - `node tools/golden.js verify` … 全 7 モード × 15 fixture（105 ケース）の変換結果を `tools/goldens/` とバイト単位で比較する
-- `node tools/test_claimsBlock.js` … `stripBlankLinesInClaimsBlock`（請求項ヘッダブロック内の空行削除、`officeActionTight` モードで使用）の単体テスト（42 ケース）
+- `node tools/test_claimsBlock.js` … `stripBlankLinesInClaimsBlock`（請求項ヘッダブロック内の空行削除、`officeActionTight` モードで使用）の単体テスト（44 ケース）
 - `node tools/test_signature.js` … `stripBlankLinesInSignature`（区切り線〜署名メール行の空行削除）の単体テスト（14 ケース）
 - `node tools/smoke.js` … 最小 DOM スタブでアプリを起動し、Convert / `Ctrl`+`Enter` / Copy の配線を確認する
 - 変換ルールを意図して変えたときだけ `node tools/golden.js capture` でゴールデンを更新し、diff をレビューする

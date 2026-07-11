@@ -87,7 +87,7 @@ flowchart TD
 
 ### formatBody チェーン（6 関数）— `js/formatBody.js`
 
-本文の見出し・箇条書き・条文番号などの整形／全角化。定義: `register("formatBody", [padHead, trimHead, tightBelowBullet, fwHead, fwNumLaw, fwRefLaw])`。
+本文の見出し・箇条書き・条文番号などの整形／全角化。定義: `register("formatBody", [padHead, trimHead, tightBelowBullet, fwHead, fwNumLaw, fwRefLaw])`。見出しマーク（`buildHeadingMarkRe`）の許容形式一覧は [buildHeadingMarkRe.md](buildHeadingMarkRe.md) が正本。
 
 | 順 | 関数 | 定義ファイル | 処理内容 |
 |---|---|---|---|

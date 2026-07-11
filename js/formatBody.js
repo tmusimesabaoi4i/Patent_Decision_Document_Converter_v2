@@ -137,6 +137,7 @@
    *
    * - JS には /x が無いので「読みやすい複数行リテラル」を使わない。
    * - パターン要素を parts[] に積み、最後に join("|") して RegExp を作る。
+   * - 許容する見出し形式の一覧は js/buildHeadingMarkRe.md が正本。
    *
    * @param {{maxDigits?:number, maxDepth?:number, alphaMax?:number}} opts
    * @returns {RegExp} ^([空白])([見出しマーク])
@@ -160,6 +161,7 @@
     var SP0 = "[ \\u3000]*";
     var NUM = "[0-9０-９]";
     var ALPHA = "[A-Za-zＡ-Ｚａ-ｚ]";
+    var KANA = "[ぁ-んァ-ヶ]";
     var OPEN_P = "[\\(\\（]";
     var CLOSE_P = "[\\)\\）]";
     var DOT = "[\\.．]";
@@ -200,6 +202,9 @@
 
     // (8) 第1（ただし後続が章/節/条等に続く “らしい” とき）
     parts.push("第" + seg + "(?=" + suffixAfterDai + ")");
+
+    // (9) (あ) / （イ）（ひらがな・カタカナ 1 文字。ヴ・ヵ・ヶ を含む）
+    parts.push(OPEN_P + KANA + CLOSE_P);
 
     var inner = "(?:" + parts.join("|") + ")";
 
@@ -704,7 +709,7 @@
   // ======================================================================
 
   /**
-   * 行が buildHeadingMarkRe の見出しマーク（(1) / １． / 1) / A. / 第1章 など）で
+   * 行が buildHeadingMarkRe の見出しマーク（(1) / (あ) / １． / 1) / A. / 第1章 など）で
    * 始まるかどうかを判定する。行頭の空白（半角/全角）は許容する。
    *
    * - stripBlankLines.js（stripBlankLinesInClaimsBlock）が
