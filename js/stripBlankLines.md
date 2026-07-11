@@ -15,21 +15,20 @@ flowchart TD
     SB["stripBetween<br>（pad 指定あり）"]
   end
 
-  subgraph stripChain["stripBlankLines チェーン（6 関数）"]
+  subgraph stripChain["stripBlankLines チェーン（5 関数）"]
     F1["stripBlankLinesInCorrectionNote"]
     F2["stripBlankLinesInSearchResult"]
     F4["stripBlankLinesInAppendix"]
     F5["stripBlankLinesInPriority"]
     F6["stripBlankLinesInAmendmentSuggestion"]
-    F7["stripBlankLinesInAddedNewMatter"]
   end
 
-  subgraph stripTightChain["stripBlankLinesTight チェーン（7 関数）"]
+  subgraph stripTightChain["stripBlankLinesTight チェーン（6 関数）"]
     F8["stripBlankLinesInClaimsBlock"]
   end
 
-  F1 & F2 & F4 & F5 & F6 & F7 --> SB
-  stripTightChain --> F1 & F2 & F4 & F5 & F6 & F7
+  F1 & F2 & F4 & F5 & F6 --> SB
+  stripTightChain --> F1 & F2 & F4 & F5 & F6
   F8 --> CLB["独自実装<br>（lookahead 正規表現）"]
 ```
 
@@ -38,7 +37,7 @@ flowchart TD
 | 定義ファイル | `js/stripBlankLines.js` |
 | グローバル公開名 | `root.stripBlankLines` |
 | 依存 | `root.textPrimitives`（`splitLines` / `joinLines` / `isBlankLine` / `escapeRegExp`）／`root.formatBody`（`isHeadingLine` — 見出し行の前の空行保持に使用） |
-| チェーン登録 | `stripBlankLines`（6 関数）/ `stripBlankLinesTight`（7 関数・末尾に `stripBlankLinesInClaimsBlock`） |
+| チェーン登録 | `stripBlankLines`（5 関数）/ `stripBlankLinesTight`（6 関数・末尾に `stripBlankLinesInClaimsBlock`） |
 | 実行されるモード | `officeAction` / `finalOfficeAction` → `stripBlankLines`／`officeActionTight` → `stripBlankLinesTight` |
 | 対象外モード | `pct` / `pct_eng` / `paragraph` / `html` |
 
@@ -50,7 +49,7 @@ flowchart TD
 
 | エンジン | 使用する関数 | 空行判定 | マーカー直後・直前の改行（pad） | 内部の trim | 備考 |
 |---|---|---|---|---|---|
-| `stripBetween` | `stripBlankLinesIn*` 6 関数 | `textPrimitives.isBlankLine` | `pad.before` / `pad.after` で制御 | なし | 正規表現 `(start)([\s\S]*?)(end)` で非貪欲マッチ |
+| `stripBetween` | `stripBlankLinesIn*` 5 関数 | `textPrimitives.isBlankLine` | `pad.before` / `pad.after` で制御 | なし | 正規表現 `(start)([\s\S]*?)(end)` で非貪欲マッチ |
 | 独自（lookahead） | `stripBlankLinesInClaimsBlock` | `textPrimitives.isBlankLine` | ヘッダ直後 `\n`、終端行直前に空行 1 行を残す | なし | 終端は `(?=\n(?:・請求項\|●理由\|[<＜]\|[-－]))` で先読み（消費しない） |
 
 ### `stripBetween` の処理手順
@@ -83,17 +82,16 @@ flowchart TD
 | 3 | `stripBlankLinesInAppendix` | `<付記>` | `　この付記は、拒絶理由を構成するものではありません。` | true | true | — |
 | 4 | `stripBlankLinesInPriority` | `<優先権の主張の効果について>` | `優先権の主張の効果が認められない。` | true | false | — |
 | 5 | `stripBlankLinesInAmendmentSuggestion` | `<補正の示唆>` | `　なお、上記の補正の示唆は、法律的効果を生じさせるものではなく、拒絶理由を解消するための一案である。明細書等についてどのように補正をするかは、出願人が決定すべきものである。` | true | true | — |
-| 6 | `stripBlankLinesInAddedNewMatter` | `例えば、請求項１は、` | `」と認める。` | true | false | — |
 
 ---
 
 ## stripBlankLinesTight チェーン — 請求項ヘッダブロック
 
-`stripBlankLines` の 6 関数に加え、7 番目として **`stripBlankLinesInClaimsBlock`** が追加されたチェーンです。`officeActionTight` モード専用。
+`stripBlankLines` の 5 関数に加え、6 番目として **`stripBlankLinesInClaimsBlock`** が追加されたチェーンです。`officeActionTight` モード専用。
 
 | 順 | 関数名 | 備考 |
 |---|---|---|
-| 1〜6 | `stripBlankLines` と同じ 6 関数 | 上表を参照 |
+| 1〜5 | `stripBlankLines` と同じ 5 関数 | 上表を参照 |
 | 7 | `stripBlankLinesInClaimsBlock` | 請求項ヘッダブロック内の空行削除（下表） |
 
 ### `stripBlankLinesInClaimsBlock` の範囲定義
@@ -150,7 +148,6 @@ flowchart TD
 | `stripBlankLinesInAppendix` | `stripBlankLines` | 付記ブロック内の空行削除 |
 | `stripBlankLinesInPriority` | `stripBlankLines` | 優先権ブロック内の空行削除 |
 | `stripBlankLinesInAmendmentSuggestion` | `stripBlankLines` | 補正の示唆ブロック内の空行削除 |
-| `stripBlankLinesInAddedNewMatter` | `stripBlankLines` | 新規事項追加認定ブロック内の空行削除 |
 | `stripBlankLinesInClaimsBlock` | `stripBlankLinesTight` | 請求項ヘッダブロック（`・請求項` 群〜終端行（①次の `・請求項` / ②`●理由` / ③`<`・`＜` 行 / ④`-`・`－` 行）手前）内の空行削除 |
 
 ---
@@ -168,8 +165,8 @@ flowchart TD
 
 | モード | 3 段目チェーン | 請求項ヘッダブロック |
 |---|---|---|
-| `officeAction` | `stripBlankLines`（6 関数） | 処理しない |
-| `officeActionTight` | `stripBlankLinesTight`（7 関数） | `stripBlankLinesInClaimsBlock` で空行削除 |
+| `officeAction` | `stripBlankLines`（5 関数） | 処理しない |
+| `officeActionTight` | `stripBlankLinesTight`（6 関数） | `stripBlankLinesInClaimsBlock` で空行削除 |
 
 ---
 

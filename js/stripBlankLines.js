@@ -8,8 +8,7 @@
  *   - root.stripBlankLines
  *       stripBlankLinesInCorrectionNote, stripBlankLinesInSearchResult,
  *       stripBlankLinesInAppendix, stripBlankLinesInPriority,
- *       stripBlankLinesInAmendmentSuggestion, stripBlankLinesInAddedNewMatter,
- *       stripBlankLinesInClaimsBlock
+ *       stripBlankLinesInAmendmentSuggestion, stripBlankLinesInClaimsBlock
  *
  * ▼ 依存
  *   - root.textPrimitives（splitLines / joinLines / isBlankLine / escapeRegExp）
@@ -168,16 +167,6 @@
     return stripBetween(s, startMarker, endMarker, { before: true, after: false });
   }
 
-  function stripBlankLinesInAddedNewMatter(str) {
-    if (str == null || str === "") return "";
-    const s = String(str);
-
-    const startMarker = "例えば、請求項１は、";
-    const endMarker = "」と認める。";
-
-    return stripBetween(s, startMarker, endMarker, { before: true, after: false });
-  }
-
   /**
    * 「<補正の示唆>」から
    * 「なお、上記の補正の示唆は、法律的効果を生じさせるものではなく、拒絶理由を解消するための一案である。明細書等についてどのように補正をするかは、出願人が決定すべきものである。」
@@ -289,7 +278,6 @@
     stripBlankLinesInAppendix: stripBlankLinesInAppendix,
     stripBlankLinesInPriority: stripBlankLinesInPriority,
     stripBlankLinesInAmendmentSuggestion: stripBlankLinesInAmendmentSuggestion,
-    stripBlankLinesInAddedNewMatter: stripBlankLinesInAddedNewMatter,
 
     // 請求項ヘッダブロック内の空白行削除（stripBlankLinesTight チェーン用）
     stripBlankLinesInClaimsBlock: stripBlankLinesInClaimsBlock
