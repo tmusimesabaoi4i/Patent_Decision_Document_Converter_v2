@@ -9,7 +9,7 @@
  *       stripBlankLinesInCorrectionNote, stripBlankLinesInSearchResult,
  *       stripBlankLinesInAppendix, stripBlankLinesInPriority,
  *       stripBlankLinesInAmendmentSuggestion, stripBlankLinesInAddedNewMatter,
- *       stripBlankLinesInClaimsBlock, tightClaims
+ *       stripBlankLinesInClaimsBlock
  *
  * ▼ 依存
  *   - root.textPrimitives（splitLines / joinLines / isBlankLine / escapeRegExp）
@@ -199,66 +199,6 @@
   }
 
   // ========================================================================
-  // 『』内の空白行削除（マーカーペア単位の簡易エンジン）
-  // ========================================================================
-
-  /**
-   * 空行判定（緩和版）
-   * - 共有の isBlankLine と異なり、\n も空白類に含み、String() 変換を伴う。
-   *   stripBlankLinesBetween の挙動を変えないため、この緩和版を維持する。
-   * @param {string} line
-   * @returns {boolean}
-   */
-  function isBlankLineLoose(line) {
-    return /^[ \t\r\n\f\v　]*$/.test(String(line || ""));
-  }
-
-  /**
-   * 開始～終了マーカーに挟まれた範囲の空白行を削除（簡易）
-   * - 上記 stripBetween とは別実装（範囲全体を trim する等、挙動が異なる）。
-   *   統合すると出力が変わるため並存させている。
-   * @param {string} str
-   * @param {string|string[]} startMarker
-   * @param {string|string[]} endMarker
-   * @returns {string}
-   */
-  function stripBlankLinesBetween(str, startMarker, endMarker) {
-    if (str == null || str === "") return "";
-    var s = String(str);
-
-    var starts = Array.isArray(startMarker) ? startMarker : [startMarker];
-    var ends = Array.isArray(endMarker) ? endMarker : [endMarker];
-
-    var result = s;
-
-    for (var i = 0; i < starts.length; i++) {
-      for (var j = 0; j < ends.length; j++) {
-        var pattern = new RegExp("(" + escapeRegExp(starts[i]) + ")([\\s\\S]*?)(" + escapeRegExp(ends[j]) + ")", "g");
-        result = result.replace(pattern, function (_all, pre, inner, post) {
-          var innerLines = splitLines(inner);
-          var outLines = [];
-          for (var k = 0; k < innerLines.length; k++) {
-            if (!isBlankLineLoose(innerLines[k])) outLines.push(innerLines[k]);
-          }
-          return pre + joinLines(outLines).trim() + post;
-        });
-      }
-    }
-
-    return result;
-  }
-
-  /**
-   * 『...』内の空白行を削除
-   * @param {string} str
-   * @returns {string}
-   */
-  function tightClaims(str) {
-    if (str == null || str === "") return "";
-    return stripBlankLinesBetween(String(str), "『", "』");
-  }
-
-  // ========================================================================
   // 請求項ヘッダブロック内の空白行削除
   // ========================================================================
 
@@ -352,9 +292,6 @@
     stripBlankLinesInAddedNewMatter: stripBlankLinesInAddedNewMatter,
 
     // 請求項ヘッダブロック内の空白行削除（stripBlankLinesTight チェーン用）
-    stripBlankLinesInClaimsBlock: stripBlankLinesInClaimsBlock,
-
-    // 『』内の空白行削除（本文整形チェーンから利用）
-    tightClaims: tightClaims
+    stripBlankLinesInClaimsBlock: stripBlankLinesInClaimsBlock
   };
 })(globalThis);

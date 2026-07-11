@@ -8,13 +8,13 @@
    *
    * ▼ 役割
    *   - 見出し・箇条書き・条文番号などを対象とした整形／全角化処理を提供する。
-   *   - 過剰変換を避けるため、技術用語トークン（IEEE802.11 / WPA-PSK 等）は
-   *     保護したうえで変換する。
+   *   - 誤爆を避けるため、見出しマークの桁数・深さ等に上限を設けている
+   *     （buildHeadingMarkRe。root.formatBodyConfig で拡張可能）。
    *
    * ▼ 公開するグローバル
    *   - root.formatBody
    *       padHead, trimHead, tightBelowBullet, fwHead,
-   *       fwNumLaw, fwRefLaw, tightClaims
+   *       fwNumLaw, fwRefLaw, isHeadingLine
    *
    * ▼ 依存
    *   - root.textPrimitives（joinLines / splitLines / fwNum / fwAlnum / fw / escapeRegExp ほか）
@@ -359,15 +359,14 @@
   // ======================================================================
 
   /**
-   * 見出し・箇条書き条件に応じて全角化
+   * 行頭の見出しマークと、行頭が「●」「・」で始まる行を全角化する。
    *
-   * 重要：
-   * - デフォルトは "head"（見出しマークのみ変換）
-   * - "dot"/"both" で行全体 fw() をする場合でも、技術トークンは保護して戻す
+   * - 各行について、行頭の見出しマーク（HEADING_MARK_RE 該当部分）だけを fwAlnum で全角化する。
+   * - さらに、行頭が「●」の行と「・」の行は、行全体を fw で全角化する
+   *   （fwLineStartsWithBlackDot / fwLineStartsWithSmallDot に委譲）。
    *
    * @param {string} str
-   * @param {"head"|"dot"|"both"} [mode="head"]
-   * @returns {string}
+   * @returns {string} 全角化後の文字列
    */
   function fwHead(str) {
     var lines = splitLines(String(str || ""));
@@ -675,7 +674,7 @@
   // ======================================================================
 
   /**
-   * 図/表/式/段落の参照番号を全角化（安全側）
+   * 「表」に続く参照番号を全角化（安全側）
    * - 「特表(...)」は除外（従来互換）
    * - “数字開始” の参照列のみ対象（WPA-PSK 等の誤爆防止）
    * @param {string} str

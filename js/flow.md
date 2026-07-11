@@ -85,9 +85,9 @@ flowchart TD
 | 7 | `gap` | js/normalizeText.js | 各行の直後に空行を 1 行ずつ挿入し、行間を必ず 1 空行にする。 |
 | 8 | `lead` | js/normalizeText.js | 文字列先頭に改行を 1 つだけ付与する（既に先頭が改行なら何もしない）。 |
 
-### formatBody チェーン（7 関数）— `js/formatBody.js`
+### formatBody チェーン（6 関数）— `js/formatBody.js`
 
-本文の見出し・箇条書き・条文番号などの整形／全角化。定義: `register("formatBody", [padHead, trimHead, tightBelowBullet, fwHead, fwNumLaw, fwRefLaw, tightClaims])`。
+本文の見出し・箇条書き・条文番号などの整形／全角化。定義: `register("formatBody", [padHead, trimHead, tightBelowBullet, fwHead, fwNumLaw, fwRefLaw])`。
 
 | 順 | 関数 | 定義ファイル | 処理内容 |
 |---|---|---|---|
@@ -97,7 +97,6 @@ flowchart TD
 | 4 | `fwHead` | js/formatBody.js | 行頭の見出しマークを全角化し、さらに `●`/`・` で始まる行を行全体全角化（内部で `fwLineStartsWithBlackDot` / `fwLineStartsWithSmallDot` を使用）。 |
 | 5 | `fwNumLaw` | js/formatBody.js | 「第◯条第◯項第◯号」「令和/平成の日付」「請求項/段落/図」等の番号を全角化する（条文・参照番号系）。 |
 | 6 | `fwRefLaw` | js/formatBody.js | 「表◯」などの参照番号列を数字開始のときだけ全角化（「特表」は除外し誤変換を防止）。 |
-| 7 | `tightClaims` | js/stripBlankLines.js | `『』` で囲まれた範囲内の空白行を削除する（`formatBody` チェーンから利用されるが、定義自体は `stripBlankLines.js`）。 |
 
 ### stripBlankLines チェーン（6 関数）— `js/stripBlankLines.js`
 

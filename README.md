@@ -37,7 +37,7 @@ js/
   textPrimitives.js          … 共通プリミティブ（改行・空白判定・全角半角変換など）
   normalizeText.js           … 前処理（normalize チェーン）
   formatBody.js              … 本文整形（formatBody チェーン）
-  stripBlankLines.js         … セクション別空行削除（tightClaims / stripBlankLinesInClaimsBlock も定義）
+  stripBlankLines.js         … セクション別空行削除（stripBlankLinesInClaimsBlock も定義）
   formatSearchResult.js      … 先行技術文献調査結果・ファミリー文献情報ブロックの書式変換
   formatAmendmentNote.js     … 補正の示唆・署名ブロックの書式変換
   formatBoilerplate.js       … 定型行整形（「記」／<引用文献等一覧>／ハイフン線など）

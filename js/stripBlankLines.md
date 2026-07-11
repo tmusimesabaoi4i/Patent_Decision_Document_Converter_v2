@@ -13,7 +13,6 @@
 flowchart TD
   subgraph engines["共通エンジン（stripBlankLines.js 内）"]
     SB["stripBetween<br>（pad 指定あり）"]
-    SBB["stripBlankLinesBetween<br>（trim あり）"]
   end
 
   subgraph stripChain["stripBlankLines チェーン（6 関数）"]
@@ -29,14 +28,9 @@ flowchart TD
     F8["stripBlankLinesInClaimsBlock"]
   end
 
-  subgraph formatBodyChain["formatBody チェーン（1 関数）"]
-    TC["tightClaims"]
-  end
-
   F1 & F2 & F4 & F5 & F6 & F7 --> SB
   stripTightChain --> F1 & F2 & F4 & F5 & F6 & F7
   F8 --> CLB["独自実装<br>（lookahead 正規表現）"]
-  TC --> SBB
 ```
 
 | 項目 | 内容 |
@@ -58,7 +52,6 @@ flowchart TD
 |---|---|---|---|---|---|
 | `stripBetween` | `stripBlankLinesIn*` 6 関数 | `textPrimitives.isBlankLine` | `pad.before` / `pad.after` で制御 | なし | 正規表現 `(start)([\s\S]*?)(end)` で非貪欲マッチ |
 | 独自（lookahead） | `stripBlankLinesInClaimsBlock` | `textPrimitives.isBlankLine` | ヘッダ直後 `\n`、終端行直前に空行 1 行を残す | なし | 終端は `(?=\n(?:・請求項\|●理由\|[<＜]\|[-－]))` で先読み（消費しない） |
-| `stripBlankLinesBetween` | `tightClaims` | `isBlankLineLoose`（`\n` も空白類に含む緩和版） | なし（pad 概念なし） | `joinLines(outLines).trim()` あり | `stripBetween` と統合すると出力が変わるため並存 |
 
 ### `stripBetween` の処理手順
 
@@ -146,21 +139,6 @@ flowchart TD
 
 ---
 
-## formatBody チェーン — 『』内の空白行削除
-
-`stripBlankLines` チェーンとは別に、`formatBody` チェーンの最終ステップとして **`tightClaims`** が呼ばれます。
-
-| 項目 | 内容 |
-|---|---|
-| 関数名 | `tightClaims` |
-| 開始マーカー | `『` |
-| 終了マーカー | `』` |
-| エンジン | `stripBlankLinesBetween`（`stripBetween` ではない） |
-| チェーン登録 | `filterChains.register("formatBody", [..., tightClaims])` |
-| 実行タイミング | `stripBlankLines` チェーンより **前**（`formatBody` 段階） |
-
----
-
 ## 公開 API 一覧
 
 `root.stripBlankLines` にエクスポートされる関数です。
@@ -174,7 +152,6 @@ flowchart TD
 | `stripBlankLinesInAmendmentSuggestion` | `stripBlankLines` | 補正の示唆ブロック内の空行削除 |
 | `stripBlankLinesInAddedNewMatter` | `stripBlankLines` | 新規事項追加認定ブロック内の空行削除 |
 | `stripBlankLinesInClaimsBlock` | `stripBlankLinesTight` | 請求項ヘッダブロック（`・請求項` 群〜終端行（①次の `・請求項` / ②`●理由` / ③`<`・`＜` 行 / ④`-`・`－` 行）手前）内の空行削除 |
-| `tightClaims` | `formatBody` | 請求項引用（`『…』`）内の空行削除 |
 
 ---
 
@@ -183,7 +160,7 @@ flowchart TD
 | 段 | チェーン名 | 空白行削除に関係する処理 |
 |---|---|---|
 | 1 | `normalize` | 全文の空行削除（`rmBlank`）・行間挿入（`gap`）— マーカー範囲とは無関係 |
-| 2 | `formatBody` | **`tightClaims`**：`『』` 内のみ空行削除 |
+| 2 | `formatBody` | 空白行削除は行わない（見出し整形・全角化のみ） |
 | 3 | `stripBlankLines` / `stripBlankLinesTight` | 各セクションのマーカー間の空行削除。Tight は加えて請求項ヘッダブロックも詰める |
 | 4 | `formatTail` / `formatBoilerplate` | 末尾ブロックの書式変換（空行削除エンジンは使わない） |
 

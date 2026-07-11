@@ -122,7 +122,6 @@
   var stripBlankLinesInAmendmentSuggestion = Lib_StripBlankLines.stripBlankLinesInAmendmentSuggestion;
   var stripBlankLinesInAddedNewMatter = Lib_StripBlankLines.stripBlankLinesInAddedNewMatter;
   var stripBlankLinesInClaimsBlock = Lib_StripBlankLines.stripBlankLinesInClaimsBlock;
-  var tightClaims = Lib_StripBlankLines.tightClaims;
 
   // どれか 1 つでも欠けている場合は警告を出して終了
   if (
@@ -281,7 +280,6 @@
     fwHead,
     fwNumLaw,
     fwRefLaw,
-    tightClaims,
   ]);
 
   filterChains.register("stripBlankLines", [

@@ -102,7 +102,7 @@ app.js                     → 自動起動
 | 名前 | 処理内容 | 定義元 |
 |---|---|---|
 | `normalize` | 改行統一・半角化・制御文字除去・空行削除・行間正規化 | `normalizeText`（`nl`/`hw` は `textPrimitives`） |
-| `formatBody` | 見出し整形・全角化・クレーム詰めなど | `formatBody`, `stripBlankLines`（`tightClaims`） |
+| `formatBody` | 見出し整形・箇条書き詰め・全角化など | `formatBody` |
 | `stripBlankLines` | セクション別の空行削除 | `stripBlankLines` |
 | `stripBlankLinesTight` | `stripBlankLines` の全処理 + 請求項ヘッダブロック内の空行削除 | `stripBlankLines` |
 | `formatTail` | 文書末尾の書式変換 | `formatSearchResult`, `formatAmendmentNote`, `formatBoilerplate` |
@@ -110,7 +110,7 @@ app.js                     → 自動起動
 | `extractParagraphRefs` | 段落・図番号の抽出 | `paragraphExtraction` |
 | `toHtml` | HTML 生成 | `makeHtml` |
 
-> 各チェーンを構成する関数と処理内容の一覧は [../js/flow.md](../js/flow.md)（「チェーン別: 通過する関数と処理内容」）が正本です。空行削除系（`stripBlankLines` / `stripBlankLinesTight` / `tightClaims`）のマーカーやブロック仕様の深掘りは [../js/stripBlankLines.md](../js/stripBlankLines.md)、末尾書式変換系（`formatTail` / `formatBoilerplate`）のマーカーや行変換ルールの深掘りは [../js/formatTail.md](../js/formatTail.md) を参照。
+> 各チェーンを構成する関数と処理内容の一覧は [../js/flow.md](../js/flow.md)（「チェーン別: 通過する関数と処理内容」）が正本です。空行削除系（`stripBlankLines` / `stripBlankLinesTight`）のマーカーやブロック仕様の深掘りは [../js/stripBlankLines.md](../js/stripBlankLines.md)、末尾書式変換系（`formatTail` / `formatBoilerplate`）のマーカーや行変換ルールの深掘りは [../js/formatTail.md](../js/formatTail.md) を参照。
 
 ---
 
