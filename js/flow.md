@@ -230,7 +230,7 @@ officeAction と同一で、**4 段目のチェーンだけ** `formatTail` → [
 
 | 順 | 関数 | 定義ファイル | 処理内容 |
 |---|---|---|---|
-| 1 | `formatSearchResultBlock` | js/formatSearchResult.js | 「記」行より上を全角化し番号行を整形。さらに「先行技術文献調査結果の記録」ブロック内部を行単位で `formatSearchResultLine` により整形（IPC 行・国別行のインデント揃え等）。 |
+| 1 | `formatSearchResultBlock` | js/formatSearchResult.js | 「記」行より上を全角化し番号行を整形。さらに「先行技術文献調査結果の記録」ブロック内部を行単位で `formatSearchResultLine` により整形（IPC 行は分類記号・番号とも全角化して `Ｈ０４Ｂ　７／　２４－…` 形式に揃え、国別行はインデント揃え等）。 |
 | 2 | `formatFamilyInfoBlock` | js/formatSearchResult.js | 「<ファミリー文献情報>」〜問合せ文の間を行単位で整形（番号行はそのまま、本文行は全角スペース 3 個インデント＋英数字半角化）。 |
 | 3 | `formatAmendmentNoteBlock` | js/formatAmendmentNote.js | 「<補正をする際の注意>」以降を対象に、＜補正の示唆＞の番号行・＜ファミリー文献情報＞ブロックを状態遷移で判定しつつ行単位整形（`formatAmendmentNoteTail`）。マーカー「<補正をする際の注意>」が無い文書では、(1) 先行技術文献調査結果の終端文行（「この先行技術文献調査結果の記録は…ではありません。」）の直後から末尾、(2) 無ければ区切り線行（行全体がハイフン 10 個以上）のうち最後の 1 本の直後から末尾、だけを整形対象とし、(3) どちらも無ければ無変換（本文中の数字まで全角化しないためのフォールバック）。 |
 | 4 | `formatBoilerplateLines` | js/formatBoilerplate.js | 「記」「<引用文献等一覧>」「区切りハイフン線」等の定型行を所定レイアウトへ置換し、最後に残った `<`/`>` を全角に変換。 |

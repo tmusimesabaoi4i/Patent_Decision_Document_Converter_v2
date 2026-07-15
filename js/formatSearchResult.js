@@ -31,10 +31,12 @@
     console.warn("formatSearchResult.js: root.textPrimitives が見つかりません。textPrimitives.js を先に読み込んでください。");
     return;
   }
-  // 行分割・行結合・全角英数字の半角化などの共通プリミティブは textPrimitives に集約した。
+  // 行分割・行結合・全角半角変換などの共通プリミティブは textPrimitives に集約した。
   var splitLines = textPrimitives.splitLines;
   var joinLines = textPrimitives.joinLines;
   var hwAlnum = textPrimitives.hwAlnum;
+  var fwNum = textPrimitives.fwNum;
+  var fwAlnum = textPrimitives.fwAlnum;
 
   /**
    * 単一行をルールベースで整形する。
@@ -68,40 +70,40 @@
     s = hwAlnum(s);
 
     // n/m - x/y をまとめて拾う（/ と - の前後に空白があってもマッチさせる）
+    // 出力は全角形式（例: "　７／　２４－　　７／　２６"）
     var pattern = /\s*(\d+)\s*(\/)\s*(\d+)(\s*-\s*)(\d+)\s*(\/)\s*(\d+)/g;
 
     s = String(s).replace(
       pattern,
       function (_all, d1, slash1, d2, dashPart, d3, slash2, d4) {
-        // 1個目の数字用パディング
+        // 1個目の数字用パディング（全角 2 桁右寄せ・全角スペース埋め）
         function pad_1st(numStr) {
-          // 例: 4桁右寄せ（必要に応じて桁数変更）
-          return ("   " + numStr).slice(-3);
+          return ("　　" + fwNum(numStr)).slice(-2);
         }
 
-        // 2個目の数字用パディング
+        // 2個目の数字用パディング（全角 3 桁右寄せ・全角スペース埋め）
         function pad_2nd(numStr) {
-          return ("   " + numStr).slice(-3);
+          return ("　　　" + fwNum(numStr)).slice(-3);
         }
 
-        // 3個目の数字用パディング
+        // 3個目の数字用パディング（全角 3 桁右寄せ・全角スペース埋め）
         function pad_3rd(numStr) {
-          return ("     " + numStr).slice(-5);
+          return ("　　　" + fwNum(numStr)).slice(-3);
         }
 
-        // 4個目の数字用パディング
+        // 4個目の数字用パディング（全角 3 桁右寄せ・全角スペース埋め）
         function pad_4th(numStr) {
-          return ("   " + numStr).slice(-3);
+          return ("　　　" + fwNum(numStr)).slice(-3);
         }
 
-        // 数字部分だけ整形して再構成
+        // 数字部分だけ整形して再構成（区切りは全角 ／ － に統一）
         return (
           pad_1st(d1.trim()) +
-          slash1.trim() +               // "/" はそのまま
+          "／" +
           pad_2nd(d2.trim()) +
-          dashPart.trim() +             // " - " 含む部分（元の空白を維持）
+          "－" +
           pad_3rd(d3.trim()) +
-          slash2.trim() +
+          "／" +
           pad_4th(d4.trim())
         );
       }
@@ -150,7 +152,7 @@
     var m = s.match(/^・調査した分野[\s\u3000]+IPC[\s\u3000]+(.+)$/);
     if (m) {
       // 「・調査した分野  IPC  (末尾)」というスペース固定フォーマットに整形
-      return "・調査した分野　　ＩＰＣ　　" + m[1];
+      return "・調査した分野　　ＩＰＣ　　" + fwAlnum(m[1]);
     }
 
     // 例: 「・先行技術文献　特開...」など
@@ -164,8 +166,8 @@
     // 先頭空白は trim() 済みなので、先頭からアルファベット＋2桁数字＋アルファベットを判定
     m = s.match(/^([A-Za-z]\d{2}[A-Za-z].*)$/);
     if (m) {
-      // 所定インデント＋内容
-      return "　　　　　　　　　　　　　　" + m[1]; // 全角スペース 10個分＋α
+      // 所定インデント＋内容（分類記号 H04W などの英数字を全角化）
+      return "　　　　　　　　　　　　　　" + fwAlnum(m[1]); // 全角スペース 10個分＋α
     }
 
     // ------------------------------
