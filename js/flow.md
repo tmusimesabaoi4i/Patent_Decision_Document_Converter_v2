@@ -6,6 +6,8 @@ Convert / Copy の入り口から、モードハンドラ → フィルタチェ
 
 関連: アーキテクチャ全体・モード→チェーン対応の正本は [../filterRegistry/filterRegistry.md](../filterRegistry/filterRegistry.md)、空行削除の深掘り正本は [stripBlankLines.md](stripBlankLines.md)、末尾ブロック書式変換の深掘り正本は [formatTail.md](formatTail.md)。
 
+なお **本書（flow.md）は「関数粒度」**（各モードが最終的にどの関数を実行順に通過するか）、**filterRegistry.md は「チェーン粒度」**（モード→チェーン対応表の正本）という棲み分けです。「officeAction は結局どの関数を通るのか」を 1 か所で確認したいときは、次章「モード別: 通過する関数の全列挙」を参照してください。
+
 ---
 
 ## UI 操作の一覧
@@ -55,20 +57,112 @@ flowchart TD
 
 ---
 
-## モード別: 実行されるチェーン
+## モード別: 通過する関数の全列挙
 
-各モード（`value`）が `runTextChains` に渡すチェーン名の並び（`js/modeFunctionLists.js`）は、**モード→チェーン対応表の正本**である [../filterRegistry/filterRegistry.md](../filterRegistry/filterRegistry.md) の「3. モードとパイプライン」にまとめています。各チェーンの中身は次章「チェーン別: 通過する関数と処理内容」を参照してください。
+「そのモードで結局どの関数を、どの順で通るのか」を 1 か所で確認できるよう、モードごとに **第 0 段 → 各チェーン → 個別関数** を実行順に全列挙します。モード→チェーン対応表の**正本**（チェーン粒度）は [../filterRegistry/filterRegistry.md](../filterRegistry/filterRegistry.md) の「3. モードとパイプライン」で、本章はそれを関数粒度まで展開したものです。各チェーンの詳細は次章「[チェーン別: 通過する関数と処理内容](#チェーン別-通過する関数と処理内容)」を参照してください。
 
-フローを追ううえでの要点だけ再掲します。
+### 全モード共通の第 0 段: `toHalfWidth`
 
-- `officeAction` と `officeActionTight` の違いは 3 段目だけ（`stripBlankLines` → `stripBlankLinesTight`。請求項ヘッダブロックの空行も詰める）。
-- `finalOfficeAction` は 4 段目が `formatTail` ではなく `formatBoilerplate`。`pct` / `pct_eng` は `normalize → formatBody` のみ。`paragraph` / `html` は前処理（`normalize`）を通さない単一チェーン。
+どのモードでも、チェーンに入る**前**に `AppCore._handleConvert`（`js/app.js`）が入力全体を **`toHalfWidth`（`js/app.js`、NFKC 半角正規化）** に通します。これは `filterChains` のチェーンの**外**で実行される前処理で、下表・下記ブロックでは「第 0 段」と表記します（`normalize` チェーン内の `hw` とは別物）。`paragraph` / `html` は `normalize` を通りませんが、この `toHalfWidth` だけは通ります。
+
+### モード × チェーン 早見表
+
+行 = チェーン（正準の実行順）、列 = モード。セルの数字はそのモードでの**実行順**（0 = チェーン外の `toHalfWidth`、1 以降がチェーン）。`–` は不通過。
+
+| チェーン ＼ モード | officeAction | officeActionTight | finalOfficeAction | pct | pct_eng | paragraph | html |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| `toHalfWidth`（第 0 段・チェーン外） | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| `normalize` | 1 | 1 | 1 | 1 | 1 | – | – |
+| `formatBody` | 2 | 2 | 2 | 2 | 2 | – | – |
+| `stripBlankLines` | 3 | – | 3 | – | – | – | – |
+| `stripBlankLinesTight` | – | 3 | – | – | – | – | – |
+| `formatTail` | 4 | 4 | – | – | – | – | – |
+| `formatBoilerplate` | – | – | 4 | – | – | – | – |
+| `extractParagraphRefs` | – | – | – | – | – | 1 | – |
+| `toHtml` | – | – | – | – | – | – | 1 |
+
+### フロー図（モード → チェーン）
+
+```mermaid
+flowchart LR
+    HW["第 0 段: toHalfWidth<br/>（全モード共通・app.js・チェーン外）"]
+
+    HW --> OA["officeAction"]
+    HW --> OAT["officeActionTight"]
+    HW --> FOA["finalOfficeAction"]
+    HW --> PCT["pct / pct_eng"]
+    HW --> PARA["paragraph"]
+    HW --> HTML["html"]
+
+    OA --> OA1["normalize"] --> OA2["formatBody"] --> OA3["stripBlankLines"] --> OA4["formatTail"]
+    OAT --> OAT1["normalize"] --> OAT2["formatBody"] --> OAT3["stripBlankLinesTight"] --> OAT4["formatTail"]
+    FOA --> FOA1["normalize"] --> FOA2["formatBody"] --> FOA3["stripBlankLines"] --> FOA4["formatBoilerplate"]
+    PCT --> PCT1["normalize"] --> PCT2["formatBody"]
+    PARA --> PARA1["extractParagraphRefs"]
+    HTML --> HTML1["toHtml"]
+```
+
+### モード別ブロック（関数列）
+
+各行の「→」は実行順です。チェーン名は次章の該当詳細節へのリンクです。空行削除チェーンの関数名は共通接頭辞 `stripBlankLines` を `…` で省略しています。
+
+#### officeAction — 通常の拒絶理由通知
+
+1. **第 0 段** `toHalfWidth`（app.js・チェーン外）
+2. [normalize](#chain-normalize): `nl` → `hw` → `clean` → `rmBlank` → `squeeze` → `trim` → `gap` → `lead`
+3. [formatBody](#chain-formatbody): `padHead` → `trimHead` → `tightBelowBullet` → `fwHead` → `fwNumLaw` → `fwRefLaw`
+4. [stripBlankLines](#chain-stripblanklines): `…InCorrectionNote` → `…InSearchResult` → `…InAppendix` → `…InPriority` → `…InAmendmentSuggestion` → `…InSignature` → `…InContact`
+5. [formatTail](#chain-formattail): `formatSearchResultBlock` → `formatFamilyInfoBlock` → `formatAmendmentNoteBlock` → `formatBoilerplateLines`
+
+#### officeActionTight — 請求項ヘッダブロックの空行も詰める版
+
+officeAction と同一で、**3 段目のチェーンだけ** `stripBlankLines` → [stripBlankLinesTight](#chain-stripblanklinestight) に差し替わります（末尾に 8 番目の `…InClaimsBlock` を追加）。
+
+1. **第 0 段** `toHalfWidth`（app.js・チェーン外）
+2. [normalize](#chain-normalize): `nl` → `hw` → `clean` → `rmBlank` → `squeeze` → `trim` → `gap` → `lead`
+3. [formatBody](#chain-formatbody): `padHead` → `trimHead` → `tightBelowBullet` → `fwHead` → `fwNumLaw` → `fwRefLaw`
+4. [stripBlankLinesTight](#chain-stripblanklinestight): `…InCorrectionNote` → `…InSearchResult` → `…InAppendix` → `…InPriority` → `…InAmendmentSuggestion` → `…InSignature` → `…InContact` → `…InClaimsBlock`
+5. [formatTail](#chain-formattail): `formatSearchResultBlock` → `formatFamilyInfoBlock` → `formatAmendmentNoteBlock` → `formatBoilerplateLines`
+
+#### finalOfficeAction — 最後の拒絶理由通知 / Final Rejection
+
+officeAction と同一で、**4 段目のチェーンだけ** `formatTail` → [formatBoilerplate](#chain-formatboilerplate) に差し替わります。
+
+1. **第 0 段** `toHalfWidth`（app.js・チェーン外）
+2. [normalize](#chain-normalize): `nl` → `hw` → `clean` → `rmBlank` → `squeeze` → `trim` → `gap` → `lead`
+3. [formatBody](#chain-formatbody): `padHead` → `trimHead` → `tightBelowBullet` → `fwHead` → `fwNumLaw` → `fwRefLaw`
+4. [stripBlankLines](#chain-stripblanklines): `…InCorrectionNote` → `…InSearchResult` → `…InAppendix` → `…InPriority` → `…InAmendmentSuggestion` → `…InSignature` → `…InContact`
+5. [formatBoilerplate](#chain-formatboilerplate): `formatBoilerplateLines`
+
+#### pct / pct_eng — 国際出願（`pct_eng` は原文が主に英語）
+
+両モードとも同じ 2 チェーンで、`stripBlankLines` 系・末尾書式変換は通りません。
+
+1. **第 0 段** `toHalfWidth`（app.js・チェーン外）
+2. [normalize](#chain-normalize): `nl` → `hw` → `clean` → `rmBlank` → `squeeze` → `trim` → `gap` → `lead`
+3. [formatBody](#chain-formatbody): `padHead` → `trimHead` → `tightBelowBullet` → `fwHead` → `fwNumLaw` → `fwRefLaw`
+
+#### paragraph — 段落・図番号の抽出
+
+`normalize` を通さない単一チェーン（ただし第 0 段の `toHalfWidth` は通る）。
+
+1. **第 0 段** `toHalfWidth`（app.js・チェーン外）
+2. [extractParagraphRefs](#chain-extractparagraphrefs): `extractParagraphAndFigureRefs`
+
+#### html — HTML 変換
+
+`normalize` を通さない単一チェーン（ただし第 0 段の `toHalfWidth` は通る）。
+
+1. **第 0 段** `toHalfWidth`（app.js・チェーン外）
+2. [toHtml](#chain-tohtml): `toHtml`
 
 ---
 
 ## チェーン別: 通過する関数と処理内容
 
 各チェーンについて、`js/filterChains.js` に登録された実行順のまま関数を並べています。説明は各関数の JSDoc／実装に基づきます。
+
+<a id="chain-normalize"></a>
 
 ### normalize チェーン（8 関数）— `js/normalizeText.js`
 
@@ -85,6 +179,8 @@ flowchart TD
 | 7 | `gap` | js/normalizeText.js | 各行の直後に空行を 1 行ずつ挿入し、行間を必ず 1 空行にする。 |
 | 8 | `lead` | js/normalizeText.js | 文字列先頭に改行を 1 つだけ付与する（既に先頭が改行なら何もしない）。 |
 
+<a id="chain-formatbody"></a>
+
 ### formatBody チェーン（6 関数）— `js/formatBody.js`
 
 本文の見出し・箇条書き・条文番号などの整形／全角化。定義: `register("formatBody", [padHead, trimHead, tightBelowBullet, fwHead, fwNumLaw, fwRefLaw])`。見出しマーク（`buildHeadingMarkRe`）の許容形式一覧は [buildHeadingMarkRe.md](buildHeadingMarkRe.md) が正本。
@@ -95,12 +191,14 @@ flowchart TD
 | 2 | `trimHead` | js/formatBody.js | ドット箇条書き・見出しマーク・`<`/`-` で始まる行の行頭空白 1 個を条件付きで削除する。 |
 | 3 | `tightBelowBullet` | js/formatBody.js | 箇条書き行（ドット/見出し/`-`/`<`）の直下が空行なら、その空行を 1 行だけ詰める。 |
 | 4 | `fwHead` | js/formatBody.js | 行頭の見出しマークを全角化し、さらに `●`/`・` で始まる行を行全体全角化（内部で `fwLineStartsWithBlackDot` / `fwLineStartsWithSmallDot` を使用）。 |
-| 5 | `fwNumLaw` | js/formatBody.js | 「第◯条第◯項第◯号」「令和/平成の日付」「請求項/段落/図」等の番号を全角化する（条文・参照番号系）。 |
+| 5 | `fwNumLaw` | js/formatBody.js | 「第◯条第◯項第◯号」「令和/平成の日付」「請求項/段落/図」等の番号を全角化する（条文・参照番号系）。条アンカー無しの継続形も対象: 「同条第◯項第◯号」「同条第◯項」「同項第◯号」、及び/又は/並びに で列挙された「第◯号」「第◯項」、および「特願◯-◯号」（数字だけ全角化し、特願のハイフンは半角に統一）。 |
 | 6 | `fwRefLaw` | js/formatBody.js | 「表◯」などの参照番号列を数字開始のときだけ全角化（「特表」は除外し誤変換を防止）。 |
 
-### stripBlankLines チェーン（6 関数）— `js/stripBlankLines.js`
+<a id="chain-stripblanklines"></a>
 
-特定マーカーで挟まれたブロック内の空行だけを削除。先頭 5 関数は内部で共通エンジン `stripBetween` を使い、6 番目（`stripBlankLinesInSignature`）は独自の条件付き行単位正規表現を使う。定義: `register("stripBlankLines", [...])`。各関数の開始／終了マーカー文字列・`pad` 設定の一覧は [stripBlankLines.md](stripBlankLines.md) を参照。
+### stripBlankLines チェーン（7 関数）— `js/stripBlankLines.js`
+
+特定マーカーで挟まれたブロック内の空行だけを削除。先頭 5 関数は内部で共通エンジン `stripBetween` を使い、6・7 番目（`stripBlankLinesInSignature` / `stripBlankLinesInContact`）は独自の条件付き行単位正規表現を使う。定義: `register("stripBlankLines", [...])`。各関数の開始／終了マーカー文字列・`pad` 設定の一覧は [stripBlankLines.md](stripBlankLines.md) を参照。
 
 | 順 | 関数 | 定義ファイル | 処理内容（対象範囲） |
 |---|---|---|---|
@@ -110,16 +208,21 @@ flowchart TD
 | 4 | `stripBlankLinesInPriority` | js/stripBlankLines.js | 「<優先権の主張の効果について>」〜「優先権の主張の効果が認められない。」の範囲内の空行を削除。 |
 | 5 | `stripBlankLinesInAmendmentSuggestion` | js/stripBlankLines.js | 「<補正の示唆>」〜「なお、上記の補正の示唆は…出願人が決定すべきものである。」の範囲内の空行を削除。 |
 | 6 | `stripBlankLinesInSignature` | js/stripBlankLines.js | 区切り線（行全体がハイフンのみ・半角 `-`／全角 `－`・10 文字以上、行頭行末の空白許容）〜署名メール行（行頭空白許容で「※●●●●@jpo.go.jp」で始まる行）の範囲内の空行を削除。ただし間に `<`・`＜` 始まりの行が 1 行でもあれば、その区間は不変。 |
+| 7 | `stripBlankLinesInContact` | js/stripBlankLines.js | 問合せ案内行（行頭空白許容で「この拒絶理由通知の内容に関するお問合せ」で始まる行）〜署名メール行（「※●●●●@jpo.go.jp」で始まる行）の範囲内の空行と、問合せ案内行の直前に連続する空行を削除。「<補正をする際の注意>」がある文書は対象外（連絡先ブロックは `stripBlankLinesInCorrectionNote` の担当）。間に `<`・`＜` 始まりの行が 1 行でもあれば、その区間は不変。 |
 
-### stripBlankLinesTight チェーン（7 関数）— `js/stripBlankLines.js`
+<a id="chain-stripblanklinestight"></a>
 
-`stripBlankLines` チェーンの全 6 関数に、7 番目として `stripBlankLinesInClaimsBlock` を追加したもの。`officeActionTight` モード専用。定義: `register("stripBlankLinesTight", [...])`。
+### stripBlankLinesTight チェーン（8 関数）— `js/stripBlankLines.js`
 
-- 1〜6 は上記「stripBlankLines チェーン（6 関数）」と同一（`stripBlankLinesInCorrectionNote` 〜 `stripBlankLinesInSignature`）。
+`stripBlankLines` チェーンの全 7 関数に、8 番目として `stripBlankLinesInClaimsBlock` を追加したもの。`officeActionTight` モード専用。定義: `register("stripBlankLinesTight", [...])`。
+
+- 1〜7 は上記「stripBlankLines チェーン（7 関数）」と同一（`stripBlankLinesInCorrectionNote` 〜 `stripBlankLinesInContact`）。
 
 | 順 | 関数 | 定義ファイル | 処理内容（対象範囲） |
 |---|---|---|---|
-| 7 | `stripBlankLinesInClaimsBlock` | js/stripBlankLines.js | 請求項ヘッダ群（`・請求項` 群、4 パターン）からブロック終端（行頭一致で `・請求項` / `●理由` / `<`・`＜` / `-`・`－` の行）手前までの本文の空行を削除し、終端の直前に空行を 1 行残す（本文中の見出し行 `formatBody.isHeadingLine` の直前も 1 行残す）。ヘッダ 4 パターン・終端 4 種・見出し例外の詳細仕様は [stripBlankLines.md](stripBlankLines.md) が正本。 |
+| 8 | `stripBlankLinesInClaimsBlock` | js/stripBlankLines.js | 請求項ヘッダ群（`・請求項` 群、4 パターン）からブロック終端（行頭一致で `・請求項` / `●理由` / `<`・`＜` / `-`・`－` の行）手前までの本文の空行を削除し、終端の直前に空行を 1 行残す（本文中の見出し行 `formatBody.isHeadingLine` の直前も 1 行残す）。ヘッダ 4 パターン・終端 4 種・見出し例外の詳細仕様は [stripBlankLines.md](stripBlankLines.md) が正本。 |
+
+<a id="chain-formattail"></a>
 
 ### formatTail チェーン（4 関数）— `js/formatSearchResult.js` / `js/formatAmendmentNote.js` / `js/formatBoilerplate.js`
 
@@ -129,8 +232,10 @@ flowchart TD
 |---|---|---|---|
 | 1 | `formatSearchResultBlock` | js/formatSearchResult.js | 「記」行より上を全角化し番号行を整形。さらに「先行技術文献調査結果の記録」ブロック内部を行単位で `formatSearchResultLine` により整形（IPC 行・国別行のインデント揃え等）。 |
 | 2 | `formatFamilyInfoBlock` | js/formatSearchResult.js | 「<ファミリー文献情報>」〜問合せ文の間を行単位で整形（番号行はそのまま、本文行は全角スペース 3 個インデント＋英数字半角化）。 |
-| 3 | `formatAmendmentNoteBlock` | js/formatAmendmentNote.js | 「<補正をする際の注意>」以降を対象に、＜補正の示唆＞の番号行・＜ファミリー文献情報＞ブロックを状態遷移で判定しつつ行単位整形（`formatAmendmentNoteTail`）。 |
+| 3 | `formatAmendmentNoteBlock` | js/formatAmendmentNote.js | 「<補正をする際の注意>」以降を対象に、＜補正の示唆＞の番号行・＜ファミリー文献情報＞ブロックを状態遷移で判定しつつ行単位整形（`formatAmendmentNoteTail`）。マーカー「<補正をする際の注意>」が無い文書では、(1) 先行技術文献調査結果の終端文行（「この先行技術文献調査結果の記録は…ではありません。」）の直後から末尾、(2) 無ければ区切り線行（行全体がハイフン 10 個以上）のうち最後の 1 本の直後から末尾、だけを整形対象とし、(3) どちらも無ければ無変換（本文中の数字まで全角化しないためのフォールバック）。 |
 | 4 | `formatBoilerplateLines` | js/formatBoilerplate.js | 「記」「<引用文献等一覧>」「区切りハイフン線」等の定型行を所定レイアウトへ置換し、最後に残った `<`/`>` を全角に変換。 |
+
+<a id="chain-formatboilerplate"></a>
 
 ### formatBoilerplate チェーン（1 関数）— `js/formatBoilerplate.js`
 
@@ -140,6 +245,8 @@ flowchart TD
 |---|---|---|---|
 | 1 | `formatBoilerplateLines` | js/formatBoilerplate.js | 「記」「<引用文献等一覧>」「<最後の拒絶理由通知とする理由>」等の定型行を所定レイアウトへ置換し、`<`/`>` を全角化。 |
 
+<a id="chain-extractparagraphrefs"></a>
+
 ### extractParagraphRefs チェーン（1 関数）— `js/paragraphExtraction.js`
 
 `paragraph` モード専用。定義: `register("extractParagraphRefs", [extractParagraphAndFigureRefs])`。
@@ -147,6 +254,8 @@ flowchart TD
 | 順 | 関数 | 定義ファイル | 処理内容 |
 |---|---|---|---|
 | 1 | `extractParagraphAndFigureRefs` | js/paragraphExtraction.js | 「段落[○○○○]」「[…]-[…]」「図…」から段落番号・図番号を抽出し、重複排除→昇順→連番圧縮して `(段落…、図…)` の文字列を生成。 |
+
+<a id="chain-tohtml"></a>
 
 ### toHtml チェーン（1 関数）— `js/makeHtml.js`
 

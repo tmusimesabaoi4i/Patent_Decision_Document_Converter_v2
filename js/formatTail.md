@@ -162,7 +162,19 @@ flowchart TD
 | `pre` | 先頭〜最初の `<補正をする際の注意>` 直前まで … **無変更** |
 | `marker` | `<補正をする際の注意>` … **無変更** |
 | `tail` | マーカー直後〜末尾 … `formatAmendmentNoteTail(marker, tail)` で整形 |
-| マーカーが無い場合 | 安全側として全文を `formatAmendmentNoteTail("", input)` に通す |
+| マーカーが無い場合 | 下記「3-a′. マーカーが無い場合のフォールバック」を参照 |
+
+### 3-a′. マーカーが無い場合のフォールバック
+
+`<補正をする際の注意>` 自体が無い文書で全文を `formatAmendmentNoteTail` に通すと、本文中の数字まで全角化されてしまう。これを避けるため、連絡先（署名）ブロックだけを整形対象として切り出す。
+
+| 順 | 判定 | 動作 |
+|---|---|---|
+| 1 | 終端文行 `/^[ 　\t]*この先行技術文献調査結果の記録は、拒絶理由を構成するものではありません。/`（行頭空白許容）が存在するか | あれば、**最初に見つかった**その行の直後から末尾までを整形対象にする |
+| 2 | 1 が無い場合、区切り線行 `/^[ 　]*[-－]{10,}[ 　]*$/`（`stripBlankLinesInSignature` と同一定義。[stripBlankLines.md](stripBlankLines.md) の「区切り線〜署名メール行」参照）を末尾側から探索 | 見つかった**最後の 1 本**の直後から末尾までを整形対象にする |
+| 3 | 1・2 のいずれも無い場合 | 入力を無変換のまま返す |
+
+整形対象と判定された範囲（区切り位置より後ろ）だけを `formatAmendmentNoteTail("", tail)` に通し、それより前の行は無変更のまま結合する。
 
 ### 3-b. `formatAmendmentNoteTail` の状態機械
 
@@ -283,6 +295,7 @@ flowchart TD
 | ファミリー文献情報ブロックの範囲・行ルールを変更 | `js/formatSearchResult.js` の `formatFamilyInfoBlock` / `formatFamilyInfoLine`（補正の注意側は `js/formatAmendmentNote.js` の `convertFamilyInfoHeadLine` / `convertFamilyInfoBodyLine`）|
 | 補正の示唆の番号行・署名/TEL/メール等の固定行を変更 | `js/formatAmendmentNote.js` の `convertSuggestionNumberLineToFullWidth` / `formatAmendmentNoteLine` |
 | ブロック開始・終端マーカーを変更 | `js/formatAmendmentNote.js` の `formatAmendmentNoteTail`（`<補正の示唆>` / `<ファミリー文献情報>` / 問合せ文の判定）|
+| マーカー無し文書のフォールバック境界（終端文・区切り線）の検出を変更 | `js/formatAmendmentNote.js` の `formatAmendmentNoteBlock`（`TERM_RE` / `DIV_RE`）。区切り線の判定は `js/stripBlankLines.js` の `stripBlankLinesInSignature` と同一の正規表現を再利用しているため、変更する場合は両ファイルおよび [stripBlankLines.md](stripBlankLines.md) を揃えること |
 | チェーン構成（関数の並び）を変更 | `js/filterChains.js` の `register("formatTail", […])` / `register("formatBoilerplate", […])` |
 | モードごとの 4 段目の割り当てを変更 | `js/modeFunctionLists.js` の `names` 配列 |
 | ドキュメント更新 | 本ファイル・`js/flow.md`・`filterRegistry/filterRegistry.md`・`README.md` |

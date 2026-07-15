@@ -509,6 +509,54 @@
       }
     );
 
+    // 同条第◯項第◯号（条アンカー無しの継続形。最長一致になるよう 同条第◯項 より先に適用）
+    s = s.replace(new RegExp("同条第(" + DIGS_WS + ")項第(" + DIGS_WS + ")号", "g"),
+      function (_all, k, g) {
+        k = removeWS(k); g = removeWS(g);
+        return "同条第" + fwNum(k) + "項第" + fwNum(g) + "号";
+      }
+    );
+
+    // 同条第◯項
+    s = s.replace(new RegExp("同条第(" + DIGS_WS + ")項", "g"),
+      function (_all, k) {
+        k = removeWS(k);
+        return "同条第" + fwNum(k) + "項";
+      }
+    );
+
+    // 同項第◯号
+    s = s.replace(new RegExp("同項第(" + DIGS_WS + ")号", "g"),
+      function (_all, g) {
+        g = removeWS(g);
+        return "同項第" + fwNum(g) + "号";
+      }
+    );
+
+    // 及び/又は/並びに で列挙された 第◯号（フル形は条アンカー付きパターンが先に消費済み）
+    s = s.replace(new RegExp("(及び|又は|並びに)第(" + DIGS_WS + ")号", "g"),
+      function (_all, conj, g) {
+        g = removeWS(g);
+        return conj + "第" + fwNum(g) + "号";
+      }
+    );
+
+    // 及び/又は/並びに で列挙された 第◯項
+    s = s.replace(new RegExp("(及び|又は|並びに)第(" + DIGS_WS + ")項", "g"),
+      function (_all, conj, k) {
+        k = removeWS(k);
+        return conj + "第" + fwNum(k) + "項";
+      }
+    );
+
+    // 特願◯-◯号（数字のみ全角化。ハイフンは半角に統一）
+    s = s.replace(new RegExp("特願(" + DIGS_WS + ")[-－−](" + DIGS_WS + ")号", "g"),
+      function (_all, d1, d2) {
+        d1 = removeWS(d1); d2 = removeWS(d2);
+        return "特願" + fwNum(d1) + "-" + fwNum(d2) + "号";
+      }
+    );
+
     // 特許法施行規則様式第◯備考◯、◯
     s = s.replace(/特許法施行規則様式第([0-9０-９\s\u3000]+)備考([0-9０-９\s\u3000、,，]+)/g,
       function (_all, j, n) {

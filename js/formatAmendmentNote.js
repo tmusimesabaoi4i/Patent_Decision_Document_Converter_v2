@@ -263,9 +263,30 @@
       });
     }
 
-    // 「<補正をする際の注意>」自体が無い場合：
-    // 全文を対象に（安全側に）formatAmendmentNoteTail() を適用する。
-    return formatAmendmentNoteTail("", input);
+    // 「<補正をする際の注意>」自体が無い場合のフォールバック。
+    // 全文を通すと本文中の数字まで全角化されるため、連絡先（署名）ブロックだけを対象にする。
+    //   1. 先行技術文献調査結果ブロックの終端文行があれば、その直後から末尾まで
+    //   2. 無ければ、区切り線行（stripBlankLinesInSignature と同一定義）のうち最後の 1 本の直後から末尾まで
+    //   3. どちらも無ければ無変換で返す
+    var fbLines = splitLines(input);
+    var TERM_RE = /^[ 　\t]*この先行技術文献調査結果の記録は、拒絶理由を構成するものではありません。/;
+    var DIV_RE = /^[ 　]*[-－]{10,}[ 　]*$/;
+
+    var startIdx = -1;
+    for (var fi = 0; fi < fbLines.length; fi++) {
+      if (TERM_RE.test(fbLines[fi])) { startIdx = fi + 1; break; }
+    }
+    if (startIdx < 0) {
+      for (var di = fbLines.length - 1; di >= 0; di--) {
+        if (DIV_RE.test(fbLines[di])) { startIdx = di + 1; break; }
+      }
+    }
+    if (startIdx < 0 || startIdx >= fbLines.length) {
+      return input; // 連絡先ブロックが特定できない場合は無変換
+    }
+
+    return fbLines.slice(0, startIdx).join("\n") + "\n" +
+      formatAmendmentNoteTail("", fbLines.slice(startIdx).join("\n"));
   }
 
   /**

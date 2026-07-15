@@ -17,7 +17,7 @@
 |---|---|
 | [README.md](README.md)（本書） | プロジェクト入口。概要・クイックスタート・プロジェクト構成・回帰テストの回し方・ドキュメント一覧。 |
 | [filterRegistry/filterRegistry.md](filterRegistry/filterRegistry.md) | アーキテクチャ正本。6 層構造・`FilterRegistry` API・チェーン一覧（正本）・モード→チェーン対応（正本）・変換ルールの編集ガイド。 |
-| [js/flow.md](js/flow.md) | UI 操作起点のフロー正本。ボタン→関数の流れと、チェーン別の関数（各関数の処理内容）。 |
+| [js/flow.md](js/flow.md) | UI 操作起点のフロー正本。ボタン→関数の流れに加え、**モード別にどの関数を実行順で通過するか**（第 0 段 `toHalfWidth` ＋各チェーンの関数を全列挙）と、チェーン別の各関数の処理内容が分かる。 |
 | [js/stripBlankLines.md](js/stripBlankLines.md) | 空行削除の深掘り正本。エンジン比較・マーカー表・請求項ヘッダブロック仕様。 |
 | [js/formatTail.md](js/formatTail.md) | 末尾ブロック書式変換の深掘り正本。`formatTail` / `formatBoilerplate` チェーン 4 関数（調査結果・ファミリー情報・補正の示唆・定型行）のマーカーと行変換ルール。 |
 | [js/buildHeadingMarkRe.md](js/buildHeadingMarkRe.md) | 見出しマーク判定の深掘り正本。`buildHeadingMarkRe` が生成する `HEADING_MARK_RE` の許容 9 形式・設定（`maxDigits` / `maxDepth` / `alphaMax`）・使用箇所。 |
@@ -25,6 +25,22 @@
 > コード（モード・チェーン・スクリプト構成）を変えたら、本書のドキュメント一覧・プロジェクト構成・テスト件数も更新してください。設計の詳細は上表の各正本ドキュメントを参照。
 
 アプリ本体・モード登録・チェーン登録の実装メモは、各 `js/*.js` の先頭コメント（`app.js` / `modeFunctionLists.js` / `filterChains.js`）にもあります。
+
+## モード別 処理フロー早見表
+
+Convert を押すと、**全モード共通**でまず `toHalfWidth`（`js/app.js`、NFKC 半角正規化。フィルタチェーンの**外**で実行される第 0 段）が走り、その後モードごとのチェーン列（`js/modeFunctionLists.js`）が実行順に適用されます。
+
+| モード（`value`） | パイプライン（第 0 段 → チェーン列） | 処理の要約 |
+|---|---|---|
+| `officeAction` | `toHalfWidth` → normalize → formatBody → stripBlankLines → formatTail | 通常の拒絶理由通知。前処理・本文整形・セクション別空行削除・末尾ブロック書式変換までフル実行。 |
+| `officeActionTight` | `toHalfWidth` → normalize → formatBody → stripBlankLinesTight → formatTail | officeAction と同じで、3 段目だけ請求項ヘッダブロック内の空行も詰める版に差し替え。 |
+| `finalOfficeAction` | `toHalfWidth` → normalize → formatBody → stripBlankLines → formatBoilerplate | 最後の拒絶理由通知。末尾は `formatTail` ではなく定型行整形（`formatBoilerplate`）で締める。 |
+| `pct` | `toHalfWidth` → normalize → formatBody | 国際出願。前処理と本文整形のみ（空行削除・末尾書式変換は通らない）。 |
+| `pct_eng` | `toHalfWidth` → normalize → formatBody | 原文が主に英語の国際出願。処理内容は `pct` と同一。 |
+| `paragraph` | `toHalfWidth` → extractParagraphRefs | 段落番号・図番号を抽出して `(段落…、図…)` を生成。`normalize` は通らない。 |
+| `html` | `toHalfWidth` → toHtml | テキストを見出し／段落の HTML に変換。`normalize` は通らない。 |
+
+各モードがどの関数を実行順に通過するかの全列挙・フロー図・チェーン別の関数詳細は [js/flow.md](js/flow.md)、モード→チェーン対応表の正本は [filterRegistry/filterRegistry.md](filterRegistry/filterRegistry.md) を参照してください。
 
 ## プロジェクト構成（概要）
 
@@ -65,7 +81,7 @@ tools/
 
 ## 回帰テスト
 
-- `node tools/golden.js verify` … 全 7 モード × 15 fixture（105 ケース）の変換結果を `tools/goldens/` とバイト単位で比較する
+- `node tools/golden.js verify` … 全 7 モード × 17 fixture（119 ケース）の変換結果を `tools/goldens/` とバイト単位で比較する
 - `node tools/test_claimsBlock.js` … `stripBlankLinesInClaimsBlock`（請求項ヘッダブロック内の空行削除、`officeActionTight` モードで使用）の単体テスト（44 ケース）
 - `node tools/test_signature.js` … `stripBlankLinesInSignature`（区切り線〜署名メール行の空行削除）の単体テスト（14 ケース）
 - `node tools/smoke.js` … 最小 DOM スタブでアプリを起動し、Convert / `Ctrl`+`Enter` / Copy の配線を確認する

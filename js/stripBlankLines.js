@@ -233,6 +233,62 @@
   }
 
   // ========================================================================
+  // お問合せ行〜署名メール行（連絡先ブロック本体）内の空白行削除
+  // ========================================================================
+
+  /**
+   * 問合せ案内行（行頭空白許容で「この拒絶理由通知の内容に関するお問合せ」で
+   * 始まる行）から署名メール行（行頭空白許容で「※●●●●@jpo.go.jp」で始まる行）
+   * までの間に含まれる空白行を削除します。あわせて、問合せ案内行の直前に連続する
+   * 空白行も削除します（後段の formatAmendmentNoteTail が問合せ行の直前に空行を
+   * ちょうど 1 行挿入するため、ここでは 0 行に揃えておく）。
+   *
+   * - 「<補正をする際の注意>」がある文書は対象外（何もしない）。
+   *   その場合の連絡先ブロックは stripBlankLinesInCorrectionNote の担当で、
+   *   マーカーより前に署名類似の行が現れる文書を巻き込まないため。
+   * - マーカー無しで、区切り線〜署名メール行の間に山括弧見出し
+   *   （＜先行技術文献調査結果の記録＞ 等）が挟まる文書では
+   *   stripBlankLinesInSignature がガードにより何もしないため、
+   *   本関数が連絡先ブロックだけを詰める。
+   * - stripBlankLinesInSignature と同様、間に「<」「＜」で始まる行が
+   *   1 行でもあれば、その区間は対象外として何もしない。
+   *
+   * @param {string} str 入力文字列
+   * @returns {string} 該当範囲の空白行が削除された文字列
+   */
+  function stripBlankLinesInContact(str) {
+    if (str == null || str === "") return "";
+    var s = String(str);
+
+    // 「<補正をする際の注意>」がある文書は stripBlankLinesInCorrectionNote の担当
+    if (s.indexOf("<補正をする際の注意>") !== -1) return s;
+
+    // 問合せ案内行の直前に連続する空白行を削除する
+    s = s.replace(
+      /\n(?:[ \t　]*\n)+([ 　]*この拒絶理由通知の内容に関するお問合せ)/g,
+      "\n$1"
+    );
+
+    // (問合せ案内行)(本文)(署名メール行) — いずれも行単位で照合（m フラグ）
+    var pattern = new RegExp(
+      "(^[ 　]*この拒絶理由通知の内容に関するお問合せ[^\\n]*$)([\\s\\S]*?)(^[ 　]*※●●●●@jpo\\.go\\.jp[^\\n]*$)",
+      "gm"
+    );
+
+    return s.replace(pattern, function (all, head, inner, email) {
+      // 間に山括弧見出し行（< / ＜ 始まり。行頭空白許容）があれば対象外
+      if (/^[ 　]*[<＜]/m.test(inner)) return all;
+
+      var innerLines = splitLines(inner);
+      var outLines = [];
+      for (var i = 0; i < innerLines.length; i++) {
+        if (!isBlankLine(innerLines[i])) outLines.push(innerLines[i]);
+      }
+      return head + "\n" + joinLines(outLines) + "\n" + email;
+    });
+  }
+
+  // ========================================================================
   // 請求項ヘッダブロック内の空白行削除
   // ========================================================================
 
@@ -326,6 +382,9 @@
 
     // 区切り線〜署名メール行（連絡先ブロック）内の空白行削除
     stripBlankLinesInSignature: stripBlankLinesInSignature,
+
+    // お問合せ行〜署名メール行（連絡先ブロック本体）内の空白行削除
+    stripBlankLinesInContact: stripBlankLinesInContact,
 
     // 請求項ヘッダブロック内の空白行削除（stripBlankLinesTight チェーン用）
     stripBlankLinesInClaimsBlock: stripBlankLinesInClaimsBlock

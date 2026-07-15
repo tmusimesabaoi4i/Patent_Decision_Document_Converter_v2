@@ -121,6 +121,7 @@
   var stripBlankLinesInPriority = Lib_StripBlankLines.stripBlankLinesInPriority;
   var stripBlankLinesInAmendmentSuggestion = Lib_StripBlankLines.stripBlankLinesInAmendmentSuggestion;
   var stripBlankLinesInSignature = Lib_StripBlankLines.stripBlankLinesInSignature;
+  var stripBlankLinesInContact = Lib_StripBlankLines.stripBlankLinesInContact;
   var stripBlankLinesInClaimsBlock = Lib_StripBlankLines.stripBlankLinesInClaimsBlock;
 
   // どれか 1 つでも欠けている場合は警告を出して終了
@@ -131,10 +132,11 @@
     typeof stripBlankLinesInPriority !== "function" ||
     typeof stripBlankLinesInAmendmentSuggestion !== "function" ||
     typeof stripBlankLinesInSignature !== "function" ||
+    typeof stripBlankLinesInContact !== "function" ||
     typeof stripBlankLinesInClaimsBlock !== "function"
   ) {
     // eslint-disable-next-line no-console
-    console.warn("stripBlankLinesInCorrectionNote, stripBlankLinesInSearchResult, stripBlankLinesInAppendix, stripBlankLinesInPriority, stripBlankLinesInAmendmentSuggestion, stripBlankLinesInSignature, stripBlankLinesInClaimsBlock のいずれかが定義されていません。stripBlankLines.js を確認してください。");
+    console.warn("stripBlankLinesInCorrectionNote, stripBlankLinesInSearchResult, stripBlankLinesInAppendix, stripBlankLinesInPriority, stripBlankLinesInAmendmentSuggestion, stripBlankLinesInSignature, stripBlankLinesInContact, stripBlankLinesInClaimsBlock のいずれかが定義されていません。stripBlankLines.js を確認してください。");
     return;
   }
 
@@ -289,7 +291,8 @@
     stripBlankLinesInAppendix,
     stripBlankLinesInPriority,
     stripBlankLinesInAmendmentSuggestion,
-    stripBlankLinesInSignature
+    stripBlankLinesInSignature,
+    stripBlankLinesInContact
   ]);
 
   // stripBlankLines の全処理 + 請求項ヘッダブロック内の空行詰め（officeActionTight 用）
@@ -300,6 +303,7 @@
     stripBlankLinesInPriority,
     stripBlankLinesInAmendmentSuggestion,
     stripBlankLinesInSignature,
+    stripBlankLinesInContact,
     stripBlankLinesInClaimsBlock
   ]);
 
