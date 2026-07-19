@@ -188,6 +188,21 @@
   var extractParagraphAndFigureRefs = paragraphExtraction.extractParagraphAndFigureRefs;
   var toHtml = makeHtml.toHtml;
 
+  /**
+   * buildFirstOATemplate（最初の拒絶理由・ひな形ビルダー）を取得
+   * - buildFirstOATemplate.js で root.buildFirstOATemplate にエクスポートされている前提。
+   */
+  var Lib_BuildFirstOATemplate = root.buildFirstOATemplate || null;
+
+  if (!Lib_BuildFirstOATemplate) {
+    // eslint-disable-next-line no-console
+    console.warn("buildFirstOATemplate が見つかりません。buildFirstOATemplate.js の中でグローバル名を確認してください。");
+    return;
+  }
+
+  var buildFirstOATemplate = Lib_BuildFirstOATemplate.buildFirstOATemplate;
+  var buildFinalOATemplate = Lib_BuildFirstOATemplate.buildFinalOATemplate;
+
 
   // -------------------------------------------------------------------------
   // FilterRegistry インスタンスの生成
@@ -324,6 +339,16 @@
 
   filterChains.register("toHtml", [
     toHtml,
+  ]);
+
+  // 「1st Office Action template（最初の拒絶理由・ひな形）」用チェーン
+  filterChains.register("firstOATemplate", [
+    buildFirstOATemplate,
+  ]);
+
+  // 「Final Office Action template（最後の拒絶理由・ひな形）」用チェーン
+  filterChains.register("finalOATemplate", [
+    buildFinalOATemplate,
   ]);
 
   // -------------------------------------------------------------------------

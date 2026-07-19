@@ -1,0 +1,3 @@
+<div class="patent-text">
+<p class="patent-paragraph no-num">(サポート要件)この出願は、特許請求の範囲の記載が下記の点で、特許法第36条第6項第1号に規定する要件を満たしていない。</p>
+</div>

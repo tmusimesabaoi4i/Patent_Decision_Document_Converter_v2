@@ -78,6 +78,10 @@
     officeActionTight: [makeChainModeHandler("officeActionTight", ["normalize", "formatBody", "stripBlankLinesTight", "formatTail"])],
     // Final Office Action: 最後の拒絶理由通知 / Final Rejection
     finalOfficeAction: [makeChainModeHandler("finalOfficeAction", ["normalize", "formatBody", "stripBlankLines", "formatBoilerplate"])],
+    // 1st Office Action template: 最初の拒絶理由（ひな形）。柱書きからひな形を生成する（normalize/formatBody は通さず自前で全角化）。
+    firstOfficeActionTemplate: [makeChainModeHandler("firstOfficeActionTemplate", ["firstOATemplate"])],
+    // Final Office Action template: 最後の拒絶理由（ひな形）。first とほぼ同じで＜最後の拒絶理由通知とする理由＞ブロックを挿入する。
+    finalOfficeActionTemplate: [makeChainModeHandler("finalOfficeActionTemplate", ["finalOATemplate"])],
     // PCT: 国際出願
     pct: [makeChainModeHandler("pct", ["normalize", "formatBody"])],
     // PCT (EN): 原文が主に英語の国際出願

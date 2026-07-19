@@ -21,6 +21,7 @@
 | [js/stripBlankLines.md](js/stripBlankLines.md) | 空行削除の深掘り正本。エンジン比較・マーカー表・請求項ヘッダブロック仕様。 |
 | [js/formatTail.md](js/formatTail.md) | 末尾ブロック書式変換の深掘り正本。`formatTail` / `formatBoilerplate` チェーン 4 関数（調査結果・ファミリー情報・補正の示唆・定型行）のマーカーと行変換ルール。 |
 | [js/buildHeadingMarkRe.md](js/buildHeadingMarkRe.md) | 見出しマーク判定の深掘り正本。`buildHeadingMarkRe` が生成する `HEADING_MARK_RE` の許容 9 形式・設定（`maxDigits` / `maxDepth` / `alphaMax`）・使用箇所。 |
+| [js/buildFirstOATemplate.md](js/buildFirstOATemplate.md) | 最初／最後の拒絶理由（ひな形）生成の深掘り正本。`firstOfficeActionTemplate` / `finalOfficeActionTemplate` モードのパース規則・引用文献判定・出力テンプレート構造・両モードの差分・編集可能な固定文（審査官署名・IPC・連絡先）の場所。 |
 
 > コード（モード・チェーン・スクリプト構成）を変えたら、本書のドキュメント一覧・プロジェクト構成・テスト件数も更新してください。設計の詳細は上表の各正本ドキュメントを参照。
 
@@ -35,6 +36,8 @@ Convert を押すと、**全モード共通**でまず `toHalfWidth`（`js/app.j
 | `officeAction` | `toHalfWidth` → normalize → formatBody → stripBlankLines → formatTail | 通常の拒絶理由通知。前処理・本文整形・セクション別空行削除・末尾ブロック書式変換までフル実行。 |
 | `officeActionTight` | `toHalfWidth` → normalize → formatBody → stripBlankLinesTight → formatTail | officeAction と同じで、3 段目だけ請求項ヘッダブロック内の空行も詰める版に差し替え。 |
 | `finalOfficeAction` | `toHalfWidth` → normalize → formatBody → stripBlankLines → formatBoilerplate | 最後の拒絶理由通知。末尾は `formatTail` ではなく定型行整形（`formatBoilerplate`）で締める。 |
+| `firstOfficeActionTemplate` | `toHalfWidth` → firstOATemplate | 最初の拒絶理由（ひな形）。理由の柱書きから連番・「記」・`●理由`セクション・末尾定型ブロックまでのひな形を生成。`normalize`/`formatBody` は通らない（全角化はビルダーが自前で実施）。 |
+| `finalOfficeActionTemplate` | `toHalfWidth` → finalOATemplate | 最後の拒絶理由（ひな形）。`firstOfficeActionTemplate` とほぼ同じで、＜拒絶の理由を発見しない請求項＞と＜引用文献等一覧＞の間に「＜最後の拒絶理由通知とする理由＞」ブロックを挿入する。 |
 | `pct` | `toHalfWidth` → normalize → formatBody | 国際出願。前処理と本文整形のみ（空行削除・末尾書式変換は通らない）。 |
 | `pct_eng` | `toHalfWidth` → normalize → formatBody | 原文が主に英語の国際出願。処理内容は `pct` と同一。 |
 | `paragraph` | `toHalfWidth` → extractParagraphRefs | 段落番号・図番号を抽出して `(段落…、図…)` を生成。`normalize` は通らない。 |
@@ -58,6 +61,7 @@ js/
   formatSearchResult.js      … 先行技術文献調査結果・ファミリー文献情報ブロックの書式変換
   formatAmendmentNote.js     … 補正の示唆・署名ブロックの書式変換
   formatBoilerplate.js       … 定型行整形（「記」／<引用文献等一覧>／ハイフン線など）
+  buildFirstOATemplate.js    … 最初／最後の拒絶理由（ひな形）生成（firstOATemplate / finalOATemplate チェーン）
   paragraphExtraction.js     … 段落・図番号抽出
   makeHtml.js                … HTML 変換
   filterChains.js            … フィルタチェーン登録・runTextChains
@@ -67,6 +71,7 @@ js/
   stripBlankLines.md         … 空行削除の深掘り正本
   formatTail.md              … 末尾ブロック書式変換の深掘り正本
   buildHeadingMarkRe.md      … 見出しマーク判定の深掘り正本
+  buildFirstOATemplate.md    … 最初の拒絶理由（ひな形）生成の深掘り正本
 filterRegistry/
   filterRegistry.js          … フィルタパイプライン基盤（FilterRegistry クラス）
   filterRegistry.md          … アーキテクチャ正本（変換パイプライン設計）
@@ -81,7 +86,7 @@ tools/
 
 ## 回帰テスト
 
-- `node tools/golden.js verify` … 全 7 モード × 17 fixture（119 ケース）の変換結果を `tools/goldens/` とバイト単位で比較する
+- `node tools/golden.js verify` … 全 9 モード × 21 fixture（189 ケース）の変換結果を `tools/goldens/` とバイト単位で比較する
 - `node tools/test_claimsBlock.js` … `stripBlankLinesInClaimsBlock`（請求項ヘッダブロック内の空行削除、`officeActionTight` モードで使用）の単体テスト（44 ケース）
 - `node tools/test_signature.js` … `stripBlankLinesInSignature`（区切り線〜署名メール行の空行削除）の単体テスト（14 ケース）
 - `node tools/smoke.js` … 最小 DOM スタブでアプリを起動し、Convert / `Ctrl`+`Enter` / Copy の配線を確認する

@@ -102,7 +102,7 @@ async function main() {
   // 1) 起動確認: root.app は起動済みインスタンス
   assert.ok(globalThis.app && typeof globalThis.app.run === "function", "root.app が初期化されていない");
   const modes = globalThis.app.listModes();
-  for (const key of ["officeAction", "officeActionTight", "finalOfficeAction", "pct", "pct_eng", "paragraph", "html"]) {
+  for (const key of ["officeAction", "officeActionTight", "finalOfficeAction", "firstOfficeActionTemplate", "finalOfficeActionTemplate", "pct", "pct_eng", "paragraph", "html"]) {
     assert.ok(modes.includes(key), `モード ${key} が未登録`);
   }
 

@@ -94,6 +94,34 @@
               class="mode-input"
               type="radio"
               name="mode"
+              value="firstOfficeActionTemplate"
+            />
+            <span class="mode-pill-indicator" aria-hidden="true"></span>
+            <span class="mode-pill-label">
+              <span class="mode-pill-title">1st Office Action template</span>
+              <span class="mode-pill-desc">最初の拒絶理由（ひな形）を生成</span>
+            </span>
+          </label>
+
+          <label class="mode-pill">
+            <input
+              class="mode-input"
+              type="radio"
+              name="mode"
+              value="finalOfficeActionTemplate"
+            />
+            <span class="mode-pill-indicator" aria-hidden="true"></span>
+            <span class="mode-pill-label">
+              <span class="mode-pill-title">Final Office Action template</span>
+              <span class="mode-pill-desc">最後の拒絶理由（ひな形）を生成</span>
+            </span>
+          </label>
+
+          <label class="mode-pill">
+            <input
+              class="mode-input"
+              type="radio"
+              name="mode"
               value="pct"
             />
             <span class="mode-pill-indicator" aria-hidden="true"></span>
@@ -245,6 +273,7 @@
   <script src="js/formatSearchResult.js"></script>
   <script src="js/formatAmendmentNote.js"></script>
   <script src="js/formatBoilerplate.js"></script>
+  <script src="js/buildFirstOATemplate.js"></script>
   <script src="js/paragraphExtraction.js"></script>
   <script src="js/makeHtml.js"></script>
   <script src="js/filterChains.js"></script>

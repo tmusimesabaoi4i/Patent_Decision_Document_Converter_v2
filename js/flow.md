@@ -69,17 +69,19 @@ flowchart TD
 
 行 = チェーン（正準の実行順）、列 = モード。セルの数字はそのモードでの**実行順**（0 = チェーン外の `toHalfWidth`、1 以降がチェーン）。`–` は不通過。
 
-| チェーン ＼ モード | officeAction | officeActionTight | finalOfficeAction | pct | pct_eng | paragraph | html |
-|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| `toHalfWidth`（第 0 段・チェーン外） | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| `normalize` | 1 | 1 | 1 | 1 | 1 | – | – |
-| `formatBody` | 2 | 2 | 2 | 2 | 2 | – | – |
-| `stripBlankLines` | 3 | – | 3 | – | – | – | – |
-| `stripBlankLinesTight` | – | 3 | – | – | – | – | – |
-| `formatTail` | 4 | 4 | – | – | – | – | – |
-| `formatBoilerplate` | – | – | 4 | – | – | – | – |
-| `extractParagraphRefs` | – | – | – | – | – | 1 | – |
-| `toHtml` | – | – | – | – | – | – | 1 |
+| チェーン ＼ モード | officeAction | officeActionTight | finalOfficeAction | firstOfficeActionTemplate | finalOfficeActionTemplate | pct | pct_eng | paragraph | html |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| `toHalfWidth`（第 0 段・チェーン外） | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| `normalize` | 1 | 1 | 1 | – | – | 1 | 1 | – | – |
+| `formatBody` | 2 | 2 | 2 | – | – | 2 | 2 | – | – |
+| `stripBlankLines` | 3 | – | 3 | – | – | – | – | – | – |
+| `stripBlankLinesTight` | – | 3 | – | – | – | – | – | – | – |
+| `formatTail` | 4 | 4 | – | – | – | – | – | – | – |
+| `formatBoilerplate` | – | – | 4 | – | – | – | – | – | – |
+| `extractParagraphRefs` | – | – | – | – | – | – | – | 1 | – |
+| `toHtml` | – | – | – | – | – | – | – | – | 1 |
+| `firstOATemplate` | – | – | – | 1 | – | – | – | – | – |
+| `finalOATemplate` | – | – | – | – | 1 | – | – | – | – |
 
 ### フロー図（モード → チェーン）
 
@@ -90,6 +92,8 @@ flowchart LR
     HW --> OA["officeAction"]
     HW --> OAT["officeActionTight"]
     HW --> FOA["finalOfficeAction"]
+    HW --> FOAT["firstOfficeActionTemplate"]
+    HW --> FNAT["finalOfficeActionTemplate"]
     HW --> PCT["pct / pct_eng"]
     HW --> PARA["paragraph"]
     HW --> HTML["html"]
@@ -97,6 +101,8 @@ flowchart LR
     OA --> OA1["normalize"] --> OA2["formatBody"] --> OA3["stripBlankLines"] --> OA4["formatTail"]
     OAT --> OAT1["normalize"] --> OAT2["formatBody"] --> OAT3["stripBlankLinesTight"] --> OAT4["formatTail"]
     FOA --> FOA1["normalize"] --> FOA2["formatBody"] --> FOA3["stripBlankLines"] --> FOA4["formatBoilerplate"]
+    FOAT --> FOAT1["firstOATemplate"]
+    FNAT --> FNAT1["finalOATemplate"]
     PCT --> PCT1["normalize"] --> PCT2["formatBody"]
     PARA --> PARA1["extractParagraphRefs"]
     HTML --> HTML1["toHtml"]
@@ -133,6 +139,20 @@ officeAction と同一で、**4 段目のチェーンだけ** `formatTail` → [
 3. [formatBody](#chain-formatbody): `padHead` → `trimHead` → `tightBelowBullet` → `fwHead` → `fwNumLaw` → `fwRefLaw`
 4. [stripBlankLines](#chain-stripblanklines): `…InCorrectionNote` → `…InSearchResult` → `…InAppendix` → `…InPriority` → `…InAmendmentSuggestion` → `…InSignature` → `…InContact`
 5. [formatBoilerplate](#chain-formatboilerplate): `formatBoilerplateLines`
+
+#### firstOfficeActionTemplate — 最初の拒絶理由（ひな形）
+
+`normalize` / `formatBody` を通さない単一チェーン（ただし第 0 段の `toHalfWidth` は通る）。理由の柱書きからひな形を生成し、全角化はビルダー内で自前実施する。
+
+1. **第 0 段** `toHalfWidth`（app.js・チェーン外）
+2. [firstOATemplate](#chain-firstoatemplate): `buildFirstOATemplate`
+
+#### finalOfficeActionTemplate — 最後の拒絶理由（ひな形）
+
+`firstOfficeActionTemplate` と同じ単一チェーン構成で、`buildFinalOATemplate` が＜拒絶の理由を発見しない請求項＞と＜引用文献等一覧＞の間に「＜最後の拒絶理由通知とする理由＞」ブロックを挿入する（共通コアを共有）。
+
+1. **第 0 段** `toHalfWidth`（app.js・チェーン外）
+2. [finalOATemplate](#chain-finaloatemplate): `buildFinalOATemplate`
 
 #### pct / pct_eng — 国際出願（`pct_eng` は原文が主に英語）
 
@@ -264,6 +284,26 @@ officeAction と同一で、**4 段目のチェーンだけ** `formatTail` → [
 | 順 | 関数 | 定義ファイル | 処理内容 |
 |---|---|---|---|
 | 1 | `toHtml` | js/makeHtml.js | テキストを解析し、段落番号行・日本語/英語見出し・本文を判定して `<div class="patent-text">` 内の見出し/段落 HTML に組み立てる。 |
+
+<a id="chain-firstoatemplate"></a>
+
+### firstOATemplate チェーン（1 関数）— `js/buildFirstOATemplate.js`
+
+`firstOfficeActionTemplate` モード専用。定義: `register("firstOATemplate", [buildFirstOATemplate])`。
+
+| 順 | 関数 | 定義ファイル | 処理内容 |
+|---|---|---|---|
+| 1 | `buildFirstOATemplate` | js/buildFirstOATemplate.js | 行頭が `（`/`(` で始まる行を理由として抽出し、連番付与・「記」区切り・`●理由Ｎ（…）について`セクション・末尾定型ブロック（＜拒絶の理由を発見しない請求項＞／＜引用文献等一覧＞／＜先行技術文献調査結果の記録＞／連絡先／署名）を組み立てて、最初の拒絶理由のひな形を生成する。理由本文は自前で全角化する。進歩性・新規性・拡大先願・先願（`CITATION_KEYWORDS`）が 1 件でもあると「記」を注記付きにし、該当理由に `・引用文献等　Ｘ`／`・備考` を付け、＜引用文献等一覧＞を出力する。詳細は [buildFirstOATemplate.md](buildFirstOATemplate.md)。 |
+
+<a id="chain-finaloatemplate"></a>
+
+### finalOATemplate チェーン（1 関数）— `js/buildFirstOATemplate.js`
+
+`finalOfficeActionTemplate` モード専用。定義: `register("finalOATemplate", [buildFinalOATemplate])`。
+
+| 順 | 関数 | 定義ファイル | 処理内容 |
+|---|---|---|---|
+| 1 | `buildFinalOATemplate` | js/buildFirstOATemplate.js | `buildFirstOATemplate` と共通コア（`buildTemplate`）を共有し、＜拒絶の理由を発見しない請求項＞と＜引用文献等一覧＞の間に「＜最後の拒絶理由通知とする理由＞」ブロック（`FINAL_REASON_HEADER` ＋ `FINAL_REASON_BODY`）を挿入する。それ以外は最初の拒絶理由（ひな形）と同一。詳細は [buildFirstOATemplate.md](buildFirstOATemplate.md)。 |
 
 ---
 

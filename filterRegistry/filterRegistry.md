@@ -83,6 +83,8 @@ app.js                     → 自動起動
 | Office Action | `officeAction` | `normalize` → `formatBody` → `stripBlankLines` → `formatTail` |
 | Office Action (Tight) | `officeActionTight` | `normalize` → `formatBody` → `stripBlankLinesTight` → `formatTail` |
 | Final Office Action | `finalOfficeAction` | `normalize` → `formatBody` → `stripBlankLines` → `formatBoilerplate` |
+| 1st Office Action template | `firstOfficeActionTemplate` | `firstOATemplate` |
+| Final Office Action template | `finalOfficeActionTemplate` | `finalOATemplate` |
 | PCT | `pct` | `normalize` → `formatBody` |
 | PCT (English) | `pct_eng` | `normalize` → `formatBody` |
 | Paragraphs | `paragraph` | `extractParagraphRefs` |
@@ -92,6 +94,8 @@ app.js                     → 自動起動
 - Final Office Action だけ終端が `formatTail` ではなく `formatBoilerplate`
 - PCT 系は `stripBlankLines` / `formatTail` を通らない
 - Paragraphs / to HTML は `normalize` を通らない
+- 1st Office Action template は単一チェーン `firstOATemplate` のみ。理由の柱書きからひな形を生成する用途で、`normalize` / `formatBody` を通らず（全角化はビルダー内で自前実施）、第 0 段 `toHalfWidth` の直後に実行される
+- Final Office Action template（`finalOATemplate`）は 1st とほぼ同じで、＜拒絶の理由を発見しない請求項＞と＜引用文献等一覧＞の間に「＜最後の拒絶理由通知とする理由＞」ブロックを挿入する（共通コアを `js/buildFirstOATemplate.js` で共有）
 
 ---
 
@@ -109,6 +113,8 @@ app.js                     → 自動起動
 | `formatBoilerplate` | 最終拒絶向け末尾処理 | `formatBoilerplate` |
 | `extractParagraphRefs` | 段落・図番号の抽出 | `paragraphExtraction` |
 | `toHtml` | HTML 生成 | `makeHtml` |
+| `firstOATemplate` | 最初の拒絶理由（ひな形）生成 | `buildFirstOATemplate` |
+| `finalOATemplate` | 最後の拒絶理由（ひな形）生成 | `buildFirstOATemplate`（`buildFinalOATemplate`） |
 
 > 各チェーンを構成する関数と処理内容の一覧は [../js/flow.md](../js/flow.md)（「チェーン別: 通過する関数と処理内容」）が正本です。空行削除系（`stripBlankLines` / `stripBlankLinesTight`）のマーカーやブロック仕様の深掘りは [../js/stripBlankLines.md](../js/stripBlankLines.md)、末尾書式変換系（`formatTail` / `formatBoilerplate`）のマーカーや行変換ルールの深掘りは [../js/formatTail.md](../js/formatTail.md) を参照。
 
